@@ -81,13 +81,14 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
   - Departure: the Mastodon embed includes the instance's `embed.js` and `width="400"`. Clodd's bare iframe stays 150px tall.
   - Tested in Chrome. Galleries of 3, 5 and 11 (6 + 5) tile correctly, and the lightbox steps through all 19 pictures in order. A real Mastodon post resized to fit. Code colours and copy buttons match.
   - Tested against the real site: all 162 post-page images have dimensions, 155 are `<picture>`s, the four code posts and two YouTube posts render, feeds keep only absolute URLs, and microformats are unchanged.
-- [ ] **7. Site switchover** (on a branch of the site repo).
-  - Install Go for Hugo modules (CI runners already have it).
-  - Replace mnml and migrate the params.
-  - Feeds: drop the site's `jsonfeed`/`feedxml` output formats and `outputs`, add `outputs: {_merge: shallow}`, and delete `layouts/home.*.xml`, `home.jsonfeed.json` and `_partials/home-rss.xml`.
-  - Mount `static/images` into `assets/images` (as `static/media` already is), so the avatar is inlined in the header and drawn on share cards.
-  - Delete the overrides in `layouts/` that the theme now covers, including `_markup/render-image.html`, which would otherwise shadow the theme's hook.
-  - Check that URLs are unchanged, then run lychee and mf2 validation.
+- [x] **7. Site switchover** (branch `clodd-theme` of the site repo, waiting to merge).
+  - Go installed locally with Homebrew. CI gets it from `actions/setup-go`, in both the deploy and link-check workflows. The site's `go.mod` says `go 1.22`, so any recent Go works.
+  - mnml (vendored in `themes/`) is gone, along with the site's overrides for feeds, Open Graph, the photos grid, the image hook, 404 and random.
+  - Params moved to the theme's names. The intro, bio and profiles match the Clodd site; `bridgy_fed` stays off, since this domain isn't bridged.
+  - Not set yet: Tinylytics, because the Clodd site's code would mix the two sites' numbers, and the newsletter, because it needs EmailOctopus's form URL.
+  - Every page URL from `main` is still built. `humans.txt`, which described mnml, is dropped. mnml's `og.png` cards on notes and list pages go away, as in Clodd.
+  - lychee (offline): one broken internal link, `/contact/` in an imported post, already broken on `main` and left as it is. mf2: the home h-card and h-feed and every post kind parse. Pagefind indexes 693 pages.
+  - Before merging, register `jimmitchell.github.io` at webmention.io: the site now advertises its endpoint.
 - [ ] **8. Micropub Worker.**
   - New properties: `in-reply-to`, `like-of`, `repost-of`, `bookmark-of`, `rsvp`, `syndication`, `featured`.
   - Support them in create, update and `q=source`.
