@@ -1,0 +1,48 @@
+{{- /* The rel="me" links to the author's profiles elsewhere. Rendered in the
+       site footer and the home page h-card from this one file, so the two
+       can never drift apart.
+
+       Every link carries rel="me", which is what lets an IndieAuth or mf2
+       parser tie those profiles back to the site. Bluesky's also carries
+       rel="atproto", so an atproto crawler recognises it as a handle it can
+       resolve rather than one more outbound link.
+
+       Arguments (a dict):
+         feed  — true to append the RSS link (footer only; the home page
+                 already advertises its feeds in <head>)
+         names — true to write each network's name into the link as text
+                 (home page only; theme.css clips it so the row shows marks
+                 alone, while a screen reader still hears the name). The
+                 footer names its links with aria-label instead. */ -}}
+{{- $social := site.Params.social | default dict -}}
+{{- $mastodon := "" -}}
+{{- with $social.mastodon -}}
+  {{- if strings.HasPrefix . "https://" -}}
+    {{- $mastodon = . -}}
+  {{- else -}}
+    {{- $handle := strings.TrimPrefix "@" . -}}
+    {{- $bits := split $handle "@" -}}
+    {{- if and (eq (len $bits) 2) (index $bits 0) (index $bits 1) -}}
+      {{- $mastodon = printf "https://%s/@%s" (index $bits 1) (index $bits 0) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $links := slice
+  (dict "key" "mastodon" "name" "Mastodon" "url" $mastodon "rel" "me noopener")
+  (dict "key" "bluesky" "name" "Bluesky" "url" ($social.bluesky | default "") "rel" "me atproto noopener")
+  (dict "key" "pixelfed" "name" "Pixelfed" "url" ($social.pixelfed | default "") "rel" "me noopener")
+  (dict "key" "github" "name" "GitHub" "url" ($social.github | default "") "rel" "me noopener")
+-}}
+{{- range $links }}
+{{- if .url }}
+<a href="{{ .url }}" class="social-link social-link--{{ .key }}" rel="{{ .rel }}" target="_blank"
+   {{- if not $.names }} aria-label="{{ .name }}"{{ end }}>{{ (resources.Get (printf "icons/%s.svg" .key)).Content | safeHTML }}
+   {{- if $.names }}<span class="social-link__name">{{ .name }}</span>{{ end }}</a>
+{{- end }}
+{{- end }}
+{{- if .feed }}
+{{- with site.Home.OutputFormats.Get "rss" }}
+<a href="{{ .RelPermalink }}" class="social-link social-link--feed" aria-label="RSS feed">{{ (resources.Get "icons/feed.svg").Content | safeHTML }}
+</a>
+{{- end }}
+{{- end }}

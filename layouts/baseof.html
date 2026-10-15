@@ -1,13 +1,21 @@
-{{- /* Phase 0 placeholder. Phase 1 replaces this with the Clodd layout. */ -}}
 <!DOCTYPE html>
 <html lang="{{ site.Language.Locale | default "en" }}">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} — {{ site.Title }}{{ end }}</title>
+{{ partial "head.html" . }}
 </head>
 <body>
-  <header><a href="{{ site.Home.RelPermalink }}">{{ site.Title }}</a></header>
-  <main>{{ block "main" . }}{{ end }}</main>
+
+{{ partial "header.html" . }}
+
+<main class="site-main">
+{{ block "main" . }}{{ end }}
+</main>
+
+{{ partial "footer.html" . }}
+
+{{ partial "search-overlay.html" . }}
+
+{{ partial "scripts.html" . }}
+{{ partial "hooks/body-end.html" . }}
 </body>
 </html>

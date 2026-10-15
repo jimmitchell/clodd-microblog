@@ -1,0 +1,12 @@
+<footer class="site-footer">
+    <div class="site-footer__inner">
+        {{- with site.Params.footer_text }}
+        <span>{{ . | markdownify }}</span>
+        {{- else }}
+        <span>&copy; {{ now.Year }} {{ site.Title }}</span>
+        {{- end }}
+        <div class="site-footer__links">
+            {{- partial "social-links.html" (dict "feed" true) }}
+        </div>
+    </div>
+</footer>

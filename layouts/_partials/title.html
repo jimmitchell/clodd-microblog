@@ -1,0 +1,18 @@
+{{- /* The <title>, as Clodd writes it. A note has no title of its own, so the
+       site title stands in. Paginated lists carry their page number. */ -}}
+{{- $suffix := "" -}}
+{{- if or .IsHome (eq .Kind "term") -}}
+  {{- $pager := partial "pager.html" . -}}
+  {{- if gt $pager.PageNumber 1 }}{{ $suffix = printf " — Page %d" $pager.PageNumber }}{{ end -}}
+{{- end -}}
+{{- if .IsHome -}}
+  {{- site.Title }}{{ $suffix -}}
+{{- else if eq .Kind "term" -}}
+  {{- .Data.Singular | humanize }}: {{ .Title }}{{ $suffix }} — {{ site.Title -}}
+{{- else if eq .Kind "404" -}}
+  404 Not Found — {{ site.Title -}}
+{{- else if .Title -}}
+  {{- .Title }} — {{ site.Title -}}
+{{- else -}}
+  {{- site.Title -}}
+{{- end -}}

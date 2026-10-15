@@ -1,0 +1,20 @@
+{{- /* theme.css is one file, split at its marker: everything above is inlined
+       so first paint needs no request, everything below arrives as a
+       preloaded stylesheet. Sections below the marker keep their order
+       relative to those above, so the split never changes which rule wins.
+
+       The inlined half resolves url()s against the page, not a stylesheet,
+       so the font paths are rewritten to site-relative URLs here. That keeps
+       a site served from a subpath working. */ -}}
+{{- $marker := "/* =END CRITICAL= */" -}}
+{{- $parts := split (resources.Get "css/theme.css").Content $marker -}}
+{{- $fonts := "fonts/" | relURL -}}
+{{- $critical := replace (index $parts 0) "url('/fonts/" (printf "url('%s" $fonts) -}}
+{{- $critical = resources.FromString "css/theme.critical.css" $critical | minify -}}
+{{- $deferred := resources.FromString "css/theme.deferred.css" (index $parts 1) | minify | fingerprint -}}
+<style>{{ $critical.Content | safeCSS }}</style>
+<link rel="preload" href="{{ $deferred.RelPermalink }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="{{ $deferred.RelPermalink }}"></noscript>
+{{- with site.Params.custom_css }}
+<style>{{ . | safeCSS }}</style>
+{{- end }}

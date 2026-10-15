@@ -1,0 +1,21 @@
+{{- /* The form's action and method do the work on their own: pressing Enter
+       submits a plain GET to the search page with ?q=, so search still works
+       with JavaScript off. theme.js only opens it, closes it, and moves focus.
+       Rendered only when the site has a search page. */ -}}
+{{- with site.GetPage "/search" }}
+<div class="search-overlay" id="search-overlay" role="dialog" aria-modal="true" aria-label="Search">
+    <form class="search-overlay__panel" action="{{ .RelPermalink }}" method="get" role="search">
+        <div class="search-overlay__field">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="search" name="q" id="search-overlay-q"
+                   placeholder="Search posts&hellip;" autocomplete="off"
+                   aria-label="Search posts">
+        </div>
+        <p class="search-overlay__hint">Enter to search <span aria-hidden="true">·</span> Esc to close</p>
+    </form>
+</div>
+{{- end }}

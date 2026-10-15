@@ -22,13 +22,18 @@
   # author.bio, then to the body of content/_index.md.
   home_intro = ""
 
+  # Footer text, Markdown allowed. Empty shows "© <year> <site title>".
+  footer_text = ""
+
   custom_css = ""
   google_site_verification = ""
 
   [params.author]
     name = ""
     bio = ""
-    avatar = ""   # path or URL; shown in the header and the home h-card
+    # Path or URL. A path under assets/ (or mounted there) is also inlined
+    # into the header as a 64px WebP, saving a request on every page.
+    avatar = ""
     email = ""    # set to show the "Email" reply pill under posts
 
   # Profiles linked from the footer and the home h-card with rel="me".

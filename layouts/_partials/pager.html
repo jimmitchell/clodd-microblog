@@ -1,0 +1,8 @@
+{{- /* The one paginator for a list page. The <title> and the list itself
+       both ask for it, so the set and its order are defined here alone:
+       Hugo keeps whichever paginator a page asks for first. */ -}}
+{{- $pages := .Pages -}}
+{{- if .IsHome -}}
+  {{- $pages = where site.RegularPages "Section" "in" site.MainSections -}}
+{{- end -}}
+{{- return .Paginate $pages -}}

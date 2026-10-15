@@ -24,15 +24,16 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
 - [x] **0. Repo setup.**
   - `theme.toml`, `go.mod`, theme defaults in `hugo.toml`, the README covering the param and front matter contract.
   - An `exampleSite` with a post of every kind and placeholder layouts.
-- [ ] **1. Base layout and design.**
+- [x] **1. Base layout and design.**
   - Port `theme.css` faithfully. Inline the part above `/* =END CRITICAL= */` and defer the rest, with Hugo Pipes.
   - Self-host DM Sans.
   - Header: avatar and title, `menus.main` with dropdown children, the search overlay, and the three-way theme toggle with the anti-flash script.
   - Footer: social links with rel="me".
-  - Port `theme.js`.
+  - Port `theme.js`. The newsletter handler is held back for phase 3, because it expects Clodd's `subscribe.php`.
+  - Also added: a `footer_text` param, and empty `hooks/head-end.html` and `hooks/body-end.html` partials for sites to override.
 - [ ] **2. Head and discovery.**
   - Open Graph, JSON-LD, `fediverse:creator`, rel="me" (including Bridgy Fed).
-  - webmention/pingback, IndieAuth/Micropub, feed alternates (including per-term feeds), sitemap, favicon, custom CSS.
+  - webmention/pingback, IndieAuth/Micropub, feed alternates (including per-term feeds), sitemap, favicon. (Custom CSS landed in phase 1.)
 - [ ] **3. Content templates.**
   - Home: the h-card intro and an h-feed of cards in three variants.
   - Single post:

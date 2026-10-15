@@ -1,8 +1,11 @@
 {{ define "main" }}
+{{- /* Phase 1 placeholder. Phase 3 replaces it with taxonomy archives. */}}
+<div class="post__content prose">
 <h1>{{ .Title }}</h1>
 <ul>
-  {{- range .Pages }}
+  {{- range (partial "pager.html" .).Pages }}
   <li><a href="{{ .RelPermalink }}">{{ .Title | default (.Date.Format "January 2, 2006") }}</a></li>
   {{- end }}
 </ul>
+</div>
 {{ end }}

@@ -26,7 +26,7 @@ params:
   author:
     name: Sam Example
     bio: I write about the open web, photography and the occasional bike ride.
-    avatar: avatar.png
+    avatar: images/avatar.png
     email: sam@example.org
   social:
     mastodon: "@sam@mastodon.example"
@@ -42,9 +42,11 @@ menus:
   main:
     - name: Archive
       pageRef: /archive
+      url: /archive/
       weight: 10
     - name: Photos
       pageRef: /photos
+      url: /photos/
       weight: 20
     - name: About
       pageRef: /about

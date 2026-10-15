@@ -1,7 +1,11 @@
 {{ define "main" }}
+{{- /* Phase 1 placeholder list. Phase 3 replaces it with the h-card intro
+       and the h-feed of cards. */}}
+<div class="post__content prose">
 <ul>
-  {{- range (.Paginate (where site.RegularPages "Section" "in" site.Params.mainSections)).Pages }}
+  {{- range (partial "pager.html" .).Pages }}
   <li><a href="{{ .RelPermalink }}">{{ .Title | default (.Date.Format "January 2, 2006") }}</a></li>
   {{- end }}
 </ul>
+</div>
 {{ end }}

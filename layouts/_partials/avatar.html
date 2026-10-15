@@ -1,0 +1,25 @@
+{{- /* Resolves params.author.avatar.
+         url    — absolute URL to the full image, for the h-card and feeds
+         inline — a 64px square WebP as a data URI, for the 32px header
+                  avatar, so the header costs no second request
+
+       Only an image Hugo can process (one under assets/, or a mount of it)
+       can be inlined. Anything else — a remote URL, a file in static/ —
+       is used as written for both. */ -}}
+{{- $out := dict "url" "" "inline" "" -}}
+{{- with site.Params.author.avatar -}}
+  {{- if or (strings.HasPrefix . "http://") (strings.HasPrefix . "https://") -}}
+    {{- $out = dict "url" . "inline" . -}}
+  {{- else -}}
+    {{- $res := resources.Get (strings.TrimPrefix "/" .) -}}
+    {{- if and $res (eq $res.ResourceType "image") (ne $res.MediaType.SubType "svg") -}}
+      {{- $thumb := $res.Fill "64x64 webp Center" -}}
+      {{- $out = dict "url" $res.Permalink "inline" (printf "data:%s;base64,%s" $thumb.MediaType.Type ($thumb.Content | base64Encode)) -}}
+    {{- else if $res -}}
+      {{- $out = dict "url" $res.Permalink "inline" $res.RelPermalink -}}
+    {{- else -}}
+      {{- $out = dict "url" (absURL .) "inline" (relURL .) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}

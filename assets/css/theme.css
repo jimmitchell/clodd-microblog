@@ -1,0 +1,2781 @@
+/* ── Clodd CMS — Public Theme ─────────────────────────────────────────────── */
+
+/* ── DM Sans — self-hosted variable font (Google Fonts, OFL license) ─────────
+   Sets everything on the site: UI, prose, and headings, and the OG card the
+   server draws is set in the static cut of the same family — a shared link and
+   the page it opens are the one typeface.
+
+   Self-hosted rather than linked from fonts.googleapis.com: every CSP in the
+   repo is `font-src 'self'`, so the CDN would mean loosening the policy in
+   three nginx configs and putting a third-party request in front of first
+   paint. The files are built from the upstream OFL sources, subset to latin +
+   latin-ext, with the weight axis clamped to 200–800 and the optical-size axis
+   pinned at 14 — carrying opsz live cost 29 KB on the preloaded critical path
+   for an adjustment nothing on the page is large enough to show.
+
+   Two things follow from the swap back off the system stack, and both are
+   load-bearing:
+
+   • **The face is downloaded, so it must not block paint.** `font-display:
+     swap` on both cuts, and `templates/base.php` preloads the roman — and only
+     the roman, which sets essentially every glyph on a page. That preload's
+     URL has to stay character-for-character identical to the `src` below, or
+     the browser fetches the file twice.
+
+   • **The weight axis is live again, and the rules below still ask for 400 or
+     700.** That is now a design decision rather than a limit of the family:
+     1.26.0 flattened the ten rules that asked for 500 or 600 because GT
+     Walsheim shipped as two static cuts, and the flatter UI outlived it. Ask
+     for 500 here and you will get 500 — so only ask deliberately. */
+
+@font-face {
+    font-family: 'DM Sans';
+    src: url('/fonts/DMSans-Variable.woff2') format('woff2');
+    font-weight: 200 800;
+    font-style:  normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'DM Sans';
+    src: url('/fonts/DMSans-Variable-Italic.woff2') format('woff2');
+    font-weight: 200 800;
+    font-style:  italic;
+    font-display: swap;
+}
+
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    /* Tells the browser to paint its own UI — scrollbars on overflowing code
+       blocks, form controls — to match the theme. Without it Chrome draws a
+       light scrollbar under every dark-mode <pre>. */
+    color-scheme: light;
+
+    --color-text:       #1C1C1C;
+    --color-muted:      #6B6B6B;
+    --color-border:     #D6D6D6;
+    --color-border-hover: #BDBDBD;
+    /* The page is a pale grey and an article card is a white sheet resting on
+       it, so the two need separate tokens. */
+    --color-bg:         #F8F8F8;
+    --color-surface:    #FFFFFF;
+    --color-chrome-bg:  var(--color-bg);
+    --color-code-bg:    #EEEEEE;
+    --color-link:       #0B5FA8;
+    --color-header-bg:  var(--color-bg);
+    --color-chrome-border: var(--color-border);
+    /* A note recesses by staying at page tone while articles lift off it, so
+       the kinds are told apart by elevation rather than by a second fill. */
+    --color-card-tint:  var(--color-bg);
+    /* Hairline above an article's footer meta; lighter than a card border so it
+       reads as a division inside the card rather than another edge. */
+    --color-rule:       color-mix(in srgb, var(--color-border) 60%, transparent);
+    /* Pure black at these alphas lands heavier than the old warm shadow did;
+       a dark grey keeps the same weight. */
+    --shadow-rgb:       40, 40, 40;
+    --max-content:      740px;
+    --max-wide:         780px;
+    /* Corner radius for every rounded box on the page — cards, images, embeds,
+       pills, form controls, and, since 1.47.1, the small chrome that used to
+       hold out at 3px: the two header icon buttons and the nav dropdown. One
+       knob, one corner. The avatar is the only exception left, and the reason
+       is written above .site-header__avatar: a face is not a panel. */
+    --radius:           6px;
+
+    /* The type stacks, named once. Every rule below reaches for these rather
+       than repeating the list — eight copies of the sans stack is eight places
+       for it to drift. */
+    --font-sans: 'DM Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+/* ── Dark mode tokens ──────────────────────────────────────────────────────── */
+/* Applied when the system prefers dark AND the user hasn't manually forced light */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        color-scheme: dark;
+
+        --color-text:       #E8E8E8;
+        --color-muted:      #9E9E9E;
+        --color-border:     #3D3D3D;
+        --color-border-hover: #505050;
+        --color-bg:         #1E1E1E;
+        --color-surface:    #272727;
+        --color-chrome-bg:  var(--color-bg);
+        --color-code-bg:    #2F2F2F;
+        --color-link:          #6FC0EA;
+        --color-header-bg:     var(--color-chrome-bg);
+        --color-chrome-border: rgba(255,255,255,0.07);
+        --color-card-tint:     var(--color-bg);
+        --color-rule:          color-mix(in srgb, var(--color-border) 70%, transparent);
+        --shadow-rgb:          0, 0, 0;
+    }
+}
+
+/* Applied when the user has manually toggled dark mode */
+[data-theme="dark"] {
+    color-scheme: dark;
+
+    --color-text:          #E8E8E8;
+    --color-muted:         #9E9E9E;
+    --color-border:        #3D3D3D;
+    --color-border-hover:  #505050;
+    --color-bg:            #1E1E1E;
+    --color-surface:       #272727;
+    --color-chrome-bg:     var(--color-bg);
+    --color-code-bg:       #2F2F2F;
+    --color-link:          #6FC0EA;
+    --color-header-bg:     var(--color-chrome-bg);
+    --color-chrome-border: rgba(255,255,255,0.07);
+    --color-card-tint:     var(--color-bg);
+    --color-rule:          color-mix(in srgb, var(--color-border) 70%, transparent);
+    --shadow-rgb:          0, 0, 0;
+}
+
+html { font-size: 18px; scroll-behavior: smooth; overflow-y: scroll; }
+
+/* ── Quality floor ────────────────────────────────────────────────────────── */
+
+/* Keyboard users need to see where they are. Nothing in the theme drew a focus
+   ring before this, so tabbing through the nav and cards was invisible. */
+:focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+
+/* 30px on the 18px root. Leading is set against the x-height rather than the
+   em, and DM Sans sets a tall one — .504em, within a hair of the system faces
+   it replaces and a world away from Walsheim's .461, which is the face the
+   short-lived 1.5556 was tuned for. Inter's .546 was taller again and the
+   leading held for it; coming back down does not want less. Keep it a whole
+   pixel at the root size: 1.6667 is 30/18. */
+body {
+    font-family: var(--font-sans);
+    line-height: 1.6667;
+    color: var(--color-text);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: .5rem;
+}
+
+/* .site-main { flex: 1; width: 100%; } */
+
+/* Headings run tighter than body copy — DM Sans sets a little loose above body
+   size. Uppercase micro-labels (.webmentions__title and friends) set their own
+   positive tracking and keep it, since class beats element. */
+h1, h2, h3, h4, h5, h6 { letter-spacing: -0.02em; }
+
+a {
+    color: var(--color-link);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+a:hover { text-decoration-thickness: 2px; }
+
+img, video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+audio { width: 100%; }
+
+/* ── Site header ──────────────────────────────────────────────────────────── */
+.site-header {
+    /* border-bottom: 1px solid var(--color-chrome-border); */
+    padding: 1.5rem;
+    background: var(--color-header-bg);
+    position: relative;
+}
+
+/*
+@media (min-width: 640px) {
+    .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 10000;
+    }
+}
+*/
+.site-header__inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.site-header__title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+.site-header__title:hover { color: var(--color-link); }
+
+/* The avatar lives inside the home link so the whole lockup is one target.
+   Same treatment as the webmention avatars (.wm-avatar): a circle, cropped to
+   fill, with the code background standing in until the image arrives.
+
+   Deliberately 50% and not --radius, which it was between 1.35.0 and here. A
+   face is the only thing on the page that is not a panel, and --radius is what
+   every panel is cornered with — so the circle is what keeps a person from
+   reading as more chrome. That also means the two must not move together:
+   changing --radius should leave every avatar alone. OgImage::AVATAR_RADIUS_RATIO
+   is the OG card's copy of this same decision. */
+.site-header__avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--color-code-bg);
+    display: block;
+    flex-shrink: 0;
+}
+
+.site-nav {
+    display: flex;
+    gap: 1.1rem;
+    flex-wrap: wrap;
+    margin-right: 0.25rem;
+}
+
+.site-nav a {
+    color: var(--color-muted);
+    text-decoration: none;
+    font-size: .95rem;
+    transition: color .15s;
+}
+
+.site-nav a:hover { color: var(--color-text); text-decoration: none; }
+
+.site-nav__item {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.site-nav__sub {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin: 0;
+    padding: .5rem 0;
+    list-style: none;
+    background: var(--color-header-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    min-width: 12rem;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity .15s ease, transform .15s ease, visibility 0s linear .15s;
+}
+
+.site-nav__item.has-children:hover > .site-nav__sub,
+.site-nav__item.has-children:focus-within > .site-nav__sub {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+    transition: opacity .15s ease, transform .15s ease;
+}
+
+.site-nav__sub a {
+    display: block;
+    padding: .4rem 1rem;
+    color: var(--color-muted);
+    font-size: .9rem;
+    white-space: nowrap;
+}
+
+.site-nav__sub a:hover { color: var(--color-text); background: var(--color-code-bg); }
+
+/* Right-hand side of header: nav + theme toggle grouped together */
+.site-header__right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.theme-toggle,
+.nav-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-muted);
+    display: flex;
+    align-items: center;
+    padding: .25rem;
+    border-radius: var(--radius);
+    transition: color .15s;
+    flex-shrink: 0;
+    line-height: 0;
+}
+
+.theme-toggle:hover,
+.nav-toggle:hover { color: var(--color-text); }
+.theme-toggle svg { width: 1rem; height: 1rem; }
+
+/* Three-way toggle icon: light (sun), dark (moon), system (monitor).
+   All three glyphs are in the markup and CSS reveals the one matching the
+   preference the head script stamps on <html>, so the button is painted
+   correctly on first paint. Injecting the SVG from deferred theme.js instead
+   left the button visibly empty until the script ran. System is the default,
+   so it also shows when JS is off and no preference attribute exists. */
+.theme-toggle__glyph { display: none; }
+:root[data-theme-pref="light"] .theme-toggle__glyph--light,
+:root[data-theme-pref="dark"] .theme-toggle__glyph--dark,
+:root:not([data-theme-pref="light"]):not([data-theme-pref="dark"]) .theme-toggle__glyph--system { display: inline; }
+
+/* ── Mobile nav toggle (hamburger) ───────────────────────────────────────── */
+.nav-toggle {
+    display: none;
+    justify-content: center;
+}
+
+.nav-toggle__bars {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 1.1rem;
+}
+
+.nav-toggle__bar {
+    display: block;
+    height: 1px;
+    background: currentColor;
+    border-radius: 2px;
+    transform-origin: center;
+    transition: transform .25s ease, opacity .25s ease;
+}
+
+/* Morph top bar → top arm of X */
+.nav-toggle.is-open .nav-toggle__bar:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+}
+/* Fade out middle bar */
+.nav-toggle.is-open .nav-toggle__bar:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+/* Morph bottom bar → bottom arm of X */
+.nav-toggle.is-open .nav-toggle__bar:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+}
+
+/* ── Search (header) ──────────────────────────────────────────────────────── */
+.search-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--color-muted);
+    display: flex;
+    align-items: center;
+    padding: .25rem;
+    border-radius: var(--radius);
+    transition: color .15s;
+    flex-shrink: 0;
+    line-height: 0;
+    text-decoration: none;
+}
+.search-toggle:hover { color: var(--color-text); }
+.search-toggle svg   { width: 1rem; height: 1rem; }
+
+/* ── Main content area ────────────────────────────────────────────────────── */
+.site-main {
+    max-width: var(--max-content);
+    margin: 1.5rem auto;
+    padding: 0 1.5rem;
+    width: 100%;
+}
+
+/* Page one only, and only so `.home-intro`'s top margin can be read literally.
+   `.site-main` has no top padding or border, so a first child's top margin
+   collapses into this one and the larger of the two wins — which is why the
+   intro's top margin used to be written as `0` and made no difference either
+   way. Making the wrapper a block formatting context stops the collapse, so the
+   intro's 1rem is 1rem *added* to whatever margin the breakpoint gives here,
+   which is what makes it work at all three widths without restating the sum.
+   Scoped with `:has()` so post and page templates keep collapsing as before —
+   `.page, .post { margin-top: .7rem }` is swallowed on purpose. Browsers without
+   `:has()` fall back to the collapsed spacing, which is what shipped before. */
+.site-main:has(.home-intro) { display: flow-root; }
+
+.site-main--wide {
+    max-width: var(--max-wide);
+}
+
+/* ── Post / page ──────────────────────────────────────────────────────────── */
+
+.page, .post { margin-top: .7rem }
+
+.post__header,
+.post__content {
+    margin-bottom: 2rem;
+}
+
+.post__title {
+    font-size: 1.5rem;
+    line-height: 1.1;
+    margin-bottom: .1rem;
+}
+
+/* Micropub context line (reply/like/repost/bookmark target) — above the body */
+.post__contexts {
+    margin-bottom: 1rem;
+}
+
+.post__contexts .post__context {
+    margin: 0 0 .25rem;
+    font-size: .875rem;
+    color: var(--color-muted);
+}
+
+.post__contexts .post__context a {
+    word-break: break-all;
+}
+
+/* The bookmark symbol is drawn (Font Awesome) where ♺, ♥ and ↩ are typed — see
+   Post::CONTEXT_ICONS. Sized in em and coloured by inheritance so it tracks
+   whatever line it lands on: the post page sets .875rem, a list card .8rem.
+   Cap height rather than em box, so it reads at the weight of the glyphs it
+   stands among instead of towering over them. */
+.post__context-icon {
+    height: .85em;
+    width: auto;
+    vertical-align: -.08em;
+}
+
+/* A titled post's featured image (u-featured) — between the header and the
+   body.
+
+   A reader sees no difference between this picture and one written into the
+   body, so it must not look like one: the shadow, radius, margins and
+   wide-viewport bleed all come from the rule shared with `.prose img` below,
+   rather than being restated here where the two could drift apart. Only the
+   figure wrapper and the lightbox anchor are its own. */
+.post__featured {
+    margin: 0;
+}
+
+.post__featured-link {
+    display: block;
+    cursor: zoom-in;
+}
+
+/* Images inside a post: one written into the body, and a titled post's
+   featured image. Same object to a reader, so one definition.
+
+   In the critical half rather than beside the rest of the `.prose` rules
+   because the featured image is the Largest Contentful Paint element on a post
+   that has one — styling it from the deferred sheet would repaint the largest
+   thing on the page. Body images near the top of a post get the same benefit,
+   which they did not have before. */
+.prose img,
+.post__featured img {
+    box-shadow: 0 4px 20px rgba(var(--shadow-rgb), .10);
+    border-radius: var(--radius);
+}
+
+.prose img:not(.gallery img),
+.post__featured img {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    margin: 2rem auto;
+}
+
+/* Wide enough to spare the room, and the picture steps out past the measure. */
+@media (min-width: 880px) {
+    .prose img:not(.gallery img),
+    .post__featured img {
+        max-width: calc(100% + 2rem);
+        width: calc(100% + 2rem);
+        margin: 2rem -1rem;
+    }
+}
+
+/* No hover fade here, deliberately, though .post__photo has one: an image in
+   the body does not fade either, and matching the body is the point. Adding it
+   to both would have meant changing every picture on the site to settle a
+   difference in one. */
+
+/* Micropub photo property (u-photo) — shown above the post body */
+.post__photos {
+    display: grid;
+    gap: 0.35rem;
+    margin-bottom: 2rem;
+}
+
+/* Two or more pictures pair up into a gallery. Unlike the card gallery, these
+   are never cropped: the card is a teaser and can crop to a tidy grid, but a
+   reader who opened the post came to look at the pictures, so each keeps the
+   proportions it was shot in and the rows are allowed to sit ragged. */
+.post__photos:not([data-count="1"]) {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+}
+
+.post__photo { margin: 0; }
+
+/* The picture is the point of a photo post, so it opens. The link carries the
+   full-size original and theme.js lifts it into the lightbox — same zoom-in
+   cursor and hover fade as the tiled gallery, so both answer the pointer alike. */
+.post__photo-link {
+    display: block;
+    border-radius: var(--radius);
+    cursor: zoom-in;
+}
+
+.post__photo-link img { transition: opacity .15s; }
+.post__photo-link:hover img { opacity: .88; }
+
+.post__photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+}
+
+.post__author,
+.post__date,
+.post__reading-time {
+    display: inline;
+    font-size: .875rem;
+    color: var(--color-muted);
+}
+
+.post__author { text-decoration: none; }
+
+.post__date::before,
+.post__reading-time::before {
+    content: ' · ';
+}
+
+.post__date a {
+    color: inherit;
+    text-decoration: none;
+}
+
+/* ── Post taxonomy terms (categories + tags intermingled) ────────────────── */
+.post__terms {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .275rem;
+    margin: .5rem 0 0;
+    padding: 0;
+}
+
+.term {
+    display: inline-flex;
+    align-items: center;
+    padding: .1rem .5rem;
+    border-radius: var(--radius);
+    font-size: .75rem;
+    font-weight: 400;
+    line-height: 1.4;
+    text-decoration: none;
+    transition: color .15s, border-color .15s;
+}
+
+.term:hover { text-decoration: none; }
+
+.term--category,
+.term--tag {
+    background: transparent;
+    color: var(--color-muted);
+    border: 1px solid var(--color-border);
+}
+
+.term--category:hover,
+.term--tag:hover {
+    color: var(--color-text);
+    border-color: currentColor;
+}
+
+
+/* ── Prose styles ─────────────────────────────────────────────────────────── */
+.prose {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    /* line-height: 1.6; */
+}
+
+.prose > * + * { margin-top: 1.3em; margin-bottom: 1.3em; }
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+    font-family: var(--font-sans);
+    line-height: 1.25;
+    margin-top: 2em;
+    margin-bottom: .5em;
+}
+
+.prose h1 { font-size: 1.7rem; }
+.prose h2 { font-size: 1.35rem; }
+.prose h3 { font-size: 1.1rem; }
+.prose h4, .prose h5, .prose h6 { font-size: 1rem; }
+
+.prose p { margin-top: 1em; }
+
+.prose ul,
+.prose ol {
+    padding-left: 1.5em;
+    margin-top: 1em;
+}
+
+.prose blockquote {
+    font-style: italic;
+    position: relative;
+    padding: 1px 1em 1em 1em;
+    background: linear-gradient(135deg,var(--color-rule) 0%,var(--color-bg) 100%);
+    border-left: 3px solid var(--color-link);
+    margin: 1.5em 0;
+    border-radius: 0;
+}
+
+.prose blockquote * {
+  position: relative;
+  z-index: 2;
+  color: var(--color-text);
+  opacity: 1;
+  text-shadow: 0 1px 0 var(--color-bg);
+  font-style: normal;
+}
+
+.prose hr {
+    border: none;
+    border-top: 1px solid var(--color-border);
+    margin: 3.5em 0;
+    max-width: 100px;
+}
+
+.prose strong { font-weight: 700; }
+.prose em     { font-style: italic; }
+.prose u { text-decoration: none; border-bottom: 1px solid var(--color-muted) }
+
+/* An external link in a post body trails a small arrow. Scoped to `.prose`, so
+   it marks a departure from the text the reader is *in*; the header and the
+   syndication row are chrome and already say where they go by name. A note card
+   carries `.prose` too, which is why the arrows show on the index as well — a
+   note is its own body, published whole.
+
+   Three things the selector has to get right, and each one was a wrong arrow:
+
+   • `[href^="http"]` on its own flags *internal* absolute links, which a
+     couple of imported posts still carry. The exclusion is written against the
+     authority — `//jimmitchell.org` — rather than as a bare substring: `*=`
+     alone would also swallow `https://bsky.app/profile/jimmitchell.org`, while
+     this form matches either scheme and leaves `micro.` and `social.`
+     external, which is what they are. It is the only host-specific string in
+     this file; the alternative is tagging the links server-side from the
+     configured site_url.
+
+   • `:not(:has(img))` keeps the arrow off the ~140 pictures in the archive
+     that are wrapped in a link. Hung off the corner of a photo it reads as
+     part of the picture rather than as a note about where it goes.
+
+   • The space is `\00a0`. An ordinary one is a break opportunity, so a link
+     ending a line drops its arrow alone onto the next.
+
+   `--color-muted`, not `--color-border-hover`: a border token set as text is
+   1.9:1 against the light card and 1.8:1 against the dark one, which is not a
+   faint arrow but an invisible one. Muted is 5.2:1 and 6.0:1.
+
+   Above =END CRITICAL= on purpose. It adds a glyph to running body copy, so
+   from the deferred sheet it would reflow the paragraphs of an article after
+   first paint. */
+.prose a[href^="http"]:not([href*="//jimmitchell.org"]):not(:has(img))::after {
+    content: "\00a0↗";
+    /* Declared twice: the alt text stops a screen reader announcing "north
+       east arrow" after every link, and an engine that does not parse the
+       two-value syntax keeps the first declaration — losing the muting, not
+       the arrow. */
+    content: "\00a0↗" / "";
+    font-size: .8em;
+    color: var(--color-muted);
+}
+
+/* No selector beyond the hover is needed: an `::after` with no `content`
+   generates no box, so this reaches exactly the links drawn above. */
+.prose a:hover::after { color: var(--color-link); }
+
+.prose table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+    font-size: .95rem;
+    margin-bottom: 1.5em;
+}
+
+@media (max-width: 600px) {
+    .prose table {
+        min-width: 300px;
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+.prose th,
+.prose td {
+    padding: .5em .75em;
+    border: 1px solid var(--color-border);
+    text-align: left;
+}
+
+.prose th { background: var(--color-code-bg); font-weight: 700; }
+
+/* Code */
+.prose code {
+    font-family: var(--font-mono);
+    font-size: .825em;
+    background: var(--color-code-bg);
+    border-radius: var(--radius);
+    padding: .1em .3em;
+}
+
+.prose pre {
+    background: var(--color-code-bg);
+    padding: 1em 1.2em;
+    overflow-x: auto;
+    line-height: 1.2;
+    font-size: 1.1rem;
+}
+
+/* Wrapper around every <pre> — provides the positioning context for the copy
+   button so it stays anchored to the visible corner even when the <pre>
+   scrolls horizontally. Fenced code ships with it already in place; theme.js
+   adds it to the rest (indented blocks, raw HTML in a post body).
+   .prose > * + * sets margins in em, so the wrapper — which takes the <pre>'s
+   place as the .prose child and leaves the <pre> with no margin of its own —
+   has to be sized like the <pre> or those margins come out 1.3 × 1rem instead
+   of 1.3 × 1.1rem. That is the ~5px per code block the page used to shift by
+   the moment theme.js ran. */
+.code-block {
+    position: relative;
+}
+
+.prose > .code-block { font-size: 1.1rem; }
+
+.code-copy {
+    position: absolute;
+    top: .3rem;
+    right: .3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    padding: 0;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    color: var(--color-muted);
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s, color .15s, border-color .15s;
+}
+
+.code-block:hover .code-copy { opacity: 1; }
+
+.code-copy:hover {
+    color: var(--color-text);
+    border-color: var(--color-border);
+    background: var(--color-bg);
+}
+
+.code-copy--copied,
+.code-copy--copied:hover,
+.code-block:hover .code-copy--copied { color: #fff; background: #4C7A2E; border-color: #4C7A2E; opacity: 1; }
+
+.code-copy svg { width: .8rem; height: .8rem; }
+
+.prose pre code {
+    background: none;
+    padding: 0;
+    font-size: .7em;
+}
+
+/* ── Home intro (representative h-card) ───────────────────────────────────────
+   A greeting, set in the reading face because it is a sentence, not chrome.
+
+   Unframed at every width — no padding, border, radius or background. It has
+   been a panel (1.48.1 framed it on phones too); 1.50.1 takes the frame off
+   everywhere, so the intro reads as a line of text above the feed rather than
+   one more card in it. */
+
+/* No rule under the greeting — whitespace does the separating. A line here reads
+   as a masthead and makes the intro feel like site furniture rather than a
+   sentence someone wrote. */
+/* The 1rem top is not a taste value — it is page two's gap, copied. `.post-list`
+   opens with the h-feed's `<data class="p-name">`, which is empty but still takes
+   a grid cell, so every page's first card sits one `gap` (1rem) below the top of
+   the list. Page one is the only page with something above that list, and without
+   the same 1rem the intro would start higher than the card it replaces, so the
+   feed would appear to shift as you paged. If that `<data>` ever stops being a
+   grid item, this comes off with it — and see the `:has()` rule on `.site-main`,
+   without which this margin collapses away and does nothing. */
+.home-intro {
+    margin: 1rem 0 1.5rem;
+}
+
+.home-intro__text {
+    font-family: var(--font-sans);
+    font-size: 1rem;
+    /* line-height: 1.55; */
+    text-wrap: pretty;
+    color: var(--color-text);
+    text-align: center;
+}
+
+.home-intro__text .p-name {
+    color: var(--color-text);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.home-intro__text .p-name:hover { color: var(--color-link); }
+
+.home-intro__text .p-note { color: var(--color-muted); }
+
+/* The links that go somewhere sit on their own line, so the eye lands on them
+   after the sentence rather than competing with it. Marks alone, like the
+   footer: the network names are still in the markup — they are what names each
+   link for a screen reader — but clipped away, so the row reads as a short strip
+   of marks under the greeting rather than a second sentence competing with the
+   first. With the words gone the marks carry the whole job, so they are drawn a
+   touch larger than the footer's and spaced further apart; the padding gives each
+   one a hit area taller than the glyph. The row is centred under the greeting,
+   with 2rem between marks. */
+.home-intro__social {
+    margin-top: .8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+}
+
+.home-intro__social .social-link { padding: .3rem 0; }
+.home-intro__social .social-link svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Clipped, not display:none — the latter takes the name out of the accessibility
+   tree along with the layout, which would leave each link announced as nothing
+   but its URL. */
+.home-intro__social .social-link__name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* ── Post list / index ────────────────────────────────────────────────────── */
+.post-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+}
+
+.site-main:not(.site-main--wide) .post-list {
+    grid-template-columns: 1fr;
+}
+
+/* ── Card family ──────────────────────────────────────────────────────────────
+   One frame, three weights. The kind is legible from the fill, the padding, and
+   whether the card carries a footer rule — no badges, no colour coding:
+
+     --note     tinted and compact; the whole note is right there
+     --photo    the image bleeds to the card edge and leads; caption beneath
+     --article  a title, an excerpt, and a footer rule with the date and how
+                long the piece runs — the only kind with further to go.
+
+   Padding lives on .post-card__inner, never on .post-card, so a photo can reach
+   the frame's edge without the other kinds losing their gutters. */
+
+.post-card {
+    position: relative;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+.post-card__inner {
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    padding: 1.5rem;
+    flex: 1;
+}
+
+.post-card:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 4px 12px rgba(var(--shadow-rgb), .10);
+}
+
+/* Notes are the everyday voice of the site and by far the most common card, so
+   they sit back: staying flat at page tone while articles lift, plus tighter
+   gutters, keeps a long run of them from shouting and makes a titled post read
+   as an event by contrast. */
+.post-card--note .post-card__inner {
+    padding: 1.15rem 1.25rem;
+}
+
+.post-card--note {
+    background: var(--color-card-tint);
+}
+
+.post-card__title {
+    font-family: var(--font-sans);
+    font-size: 1.3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin-bottom: .15rem;
+}
+
+.post-card__title a {
+    color: var(--color-text);
+    text-decoration: none;
+}
+
+.post-card__title a:hover { color: var(--color-link); }
+.post-card:hover .post-card__title a { color: var(--color-link); }
+
+/* Stretch the card's primary anchor over the whole card so the entire card is
+   one click target. Article cards use the title link; notes and photo posts use
+   the date link. */
+.post-card__title a::after,
+.post-card--note .post-card__date a::after,
+.post-card--photo .post-card__date a::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+/* Inline links inside a note body must sit above the stretched overlay so they
+   remain individually clickable; everything else falls through to the permalink. */
+.post-card__body a {
+    position: relative;
+    z-index: 1;
+}
+
+.post-card__date {
+    display: block;
+    font-size: .8rem;
+    color: var(--color-muted);
+}
+
+.post-card__excerpt {
+    font-family: var(--font-sans);
+    color: var(--color-muted);
+    font-size: .95rem;
+    flex: 1;
+}
+
+/* ── Article footer rule ──────────────────────────────────────────────────────
+   The one thing only a long-form post has is somewhere further to go, so it is
+   the one kind that says how far. Date left, distance right, hairline above. */
+.post-card__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-top: 1.1rem;
+    padding-top: .7rem;
+    border-top: 1px solid var(--color-rule);
+    font-size: .78rem;
+    letter-spacing: .02em;
+    color: var(--color-muted);
+}
+
+.post-card__readtime {
+    white-space: nowrap;
+    transition: color .15s ease;
+}
+
+.post-card:hover .post-card__readtime { color: var(--color-link); }
+
+/* ── Note (titleless aside) — list cards ──────────────────────────────────── */
+
+/* Notes share the .post-card frame with standard posts. The body element
+   replaces .post-card__excerpt and renders full Markdown via .prose. */
+.post-card__body {
+    color: var(--color-text);
+    font-size: .95rem;
+    flex: 1;
+}
+
+.post-card__body > :first-child { margin-top: 0; }
+.post-card__body > :last-child  { margin-bottom: 0; }
+
+/* Micropub context line on list cards */
+.post-card__contexts {
+    margin: .35rem 0 0;
+}
+
+.post-card__contexts .post__context {
+    margin: 0 0 .2rem;
+    font-size: .8rem;
+    color: var(--color-muted);
+}
+
+.post-card__contexts .post__context a {
+    position: relative;
+    z-index: 1;
+    word-break: break-all;
+}
+
+/* Micropub photos on list cards: notes show every photo, standard posts a
+   single thumbnail figure. */
+.post-card__photos {
+    display: grid;
+    gap: .75rem;
+    margin: .5rem 0;
+}
+
+.post-card__photo { margin: .5rem 0 0; }
+
+.post-card__photos .post-card__photo { margin: 0; }
+
+.post-card__photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius);
+}
+
+.post-card__photo--thumb img {
+    max-height: 240px;
+    object-fit: cover;
+    margin-bottom: 1rem;
+}
+
+.post-card--note .post-card__date a,
+.post-card--photo .post-card__date a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.post-card--note .post-card__date a:hover,
+.post-card--photo .post-card__date a:hover { text-decoration: underline; }
+
+/* ── Photo post ───────────────────────────────────────────────────────────────
+   A photo post is a card like the others: the gallery bleeds to the frame's top
+   and sides, and the caption and date sit in the padded block beneath it. It was
+   frameless until 1.51.0, and a long caption left loose on the page read as
+   detached from both its picture and the feed. The card's `overflow: hidden`
+   clips the gallery to the frame's radius, so the gallery carries none itself. */
+
+.post-card--photo .post-card__inner {
+    padding: 1rem 1.25rem 1.15rem;
+    gap: .3rem;
+}
+
+.post-card__gallery {
+    display: grid;
+    gap: 2px;
+}
+
+.post-card__gallery[data-count="2"],
+.post-card__gallery[data-count="4"] {
+    grid-template-columns: 1fr 1fr;
+}
+
+.post-card__gallery[data-count="3"] {
+    grid-template-columns: 2fr 1fr;
+}
+
+/* In a 3-up, the first frame spans both rows so the lead image stays the lead. */
+.post-card__gallery[data-count="3"] img:first-child {
+    grid-row: span 2;
+}
+
+.post-card__gallery img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-height: 740px;
+    object-fit: cover;
+    background: var(--color-card-tint);
+}
+
+/* A single image keeps its own proportions — cropping one photo to a fixed box
+   is a decision the photographer already made. */
+.post-card__gallery[data-count="1"] img {
+    height: auto;
+    object-fit: contain;
+}
+
+/* Five or more collapse to a uniform grid rather than growing new cases. */
+.post-card__gallery:not([data-count="1"]):not([data-count="2"]):not([data-count="3"]):not([data-count="4"]) {
+    grid-template-columns: repeat(3, 1fr);
+}
+
+.post-card__gallery:not([data-count="1"]) img { aspect-ratio: 1 / 1; }
+
+/* The caption block under a photo is chrome, not prose: quiet and close in. */
+.post-card--photo .post-card__body {
+    font-size: .9rem;
+    color: var(--color-muted);
+}
+
+/* A photo post can carry its picture two ways: attached u-photo rows, which
+   become the gallery above, or an image written inline in the body. Match them
+   as closely as the frame allows — full width of the caption block, no shadow —
+   so the two authoring routes produce one look. An inline image sits inside the
+   caption's padding rather than bleeding to the frame, so it keeps its own radius. */
+.post-card--photo .prose img:not(.gallery img) {
+    width: 100%;
+    max-width: 100%;
+    /* Same ceiling the single-image gallery uses, so a tall portrait can't take
+       over the feed. contain rather than cover — the framing was the
+       photographer's decision, not the theme's. */
+    max-height: 520px;
+    object-fit: contain;
+    margin: 0 0 .75rem;
+    border-radius: var(--radius);
+    box-shadow: none;
+}
+
+/* The date trails a photo post rather than leading it, so it needs its own
+   top spacing instead of the gap the flex column gives the leading case. */
+.post-card__date--after {
+    margin-top: .1rem;
+}
+
+/* A photo post's caption on its permalink. It is the post's only words, so it
+   reads at full size rather than as fine print — but it sits close under the
+   picture it belongs to, not adrift as a separate paragraph. */
+.post__caption {
+    margin-top: 1rem;
+}
+
+.post--photo .post__content > :first-child { margin-top: 0; }
+
+/* On the single-post page, .post--note hides nothing extra (the h1, author,
+   and reading time are already omitted server-side); just tighten spacing
+   where the byline used to be. */
+.post.post--note .post__header { margin-bottom: 1rem; }
+
+/* The " · " separator before .post__date assumes the author byline precedes
+   it. For notes the author is omitted, so the leading bullet would dangle. */
+.post.post--note .post__date::before { content: none; }
+
+/* Standard posts let prose images bleed past the content column with negative
+   margins. Notes live inside a padded .post-card (lists) or a tighter single
+   layout, so that overflow breaks the frame — keep their images contained. */
+.post-card--note .prose img:not(.gallery img),
+.post-card--photo .prose img:not(.gallery img),
+.post.post--note .prose img:not(.gallery img) {
+    width: 100%;
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+    border-radius: var(--radius);
+}
+
+.post-list__empty {
+    color: var(--color-muted);
+    font-style: italic;
+    grid-column: 1 / -1;
+}
+
+/* ── Friend cards ─────────────────────────────────────────────────────────────
+   A blogroll entry, built *on* the .post-card frame rather than beside it: the
+   surface, border, radius, hover lift and stretched-anchor click target all come
+   from the rules above, so a friend card cannot drift from the feed's cards.
+   Only what a person has and a post does not is defined here.
+
+   Three decisions worth keeping:
+
+   - **Two columns, always.** The feed runs one-up inside the 740px measure
+     because a post needs the measure; a friend needs a name and two addresses,
+     so this grid keeps both columns and folds at the same 640px breakpoint
+     .post-list uses — shared in the responsive block below, not restated.
+   - **The domain is set in --font-mono.** On a page whose whole subject is
+     where people live, the address is data rather than a subtitle, and it is
+     the one thing that tells a friend card from a post card at a glance. It is
+     also the only new note in the design; everything else is borrowed.
+   - **The face is a circle, on --radius's exclusion.** Reasoning is written
+     above .site-header__avatar: a person is not a panel. Changing --radius must
+     leave this alone; changing the site's avatars is what it follows.
+
+   This sits above =END CRITICAL= unlike the rest of the page-type CSS, and that
+   is deliberate. The cards render inside .post__content.prose, whose descendant
+   selectors (img, a[href^=http]::after) outrank a bare class — so without these
+   rules the page is not merely unstyled, it is a column of full-bleed avatars
+   with drop shadows. Deferring them would flash exactly that. */
+
+.friend-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    align-items: stretch;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* A friend card carries a name and two addresses, so it takes the note card's
+   tighter gutters rather than the article card's. Spacing between its two rows
+   is margin, not the inner's gap, because the footer has to bottom-align. */
+.post-card--friend .post-card__inner {
+    padding: 1.15rem 1.25rem;
+    gap: 0;
+}
+
+/* Avatar, name and domain are one link, the way .site-header__avatar sits inside
+   the home link — one lockup, one target. It also keeps the picture out of the
+   lightbox and away from the ↗ marker, both of which already exempt an image
+   that lives inside an anchor. */
+.friend-id {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    margin-bottom: .8rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Stretch that link over the whole card, matching .post-card__title a — but on
+   ::before, where the cards above use ::after. Inside .prose the ::after of an
+   outbound link already belongs to the ↗ marker, and the two fought: the marker
+   won on specificity, so the overlay's content became an arrow drawn at the
+   card's top-left corner. Two pseudo-elements, no contest. */
+.post-card--friend .friend-id::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+/* min-width:0 so a long domain can wrap inside the flex row instead of forcing
+   the card wider than its grid track. */
+.friend-id__text {
+    display: block;
+    min-width: 0;
+}
+
+/* 48px, which is neither the header's 32 nor a webmention's 40 — those are a
+   byline and a reaction, and here the person is the subject of the card. */
+.friend-avatar {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+    display: block;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--color-code-bg);
+}
+
+/* No photo to hand: the initial, in the same circle. Identical treatment to
+   .wm-avatar--fallback, one step up in size for the larger disc. */
+.friend-avatar--initial {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-muted);
+    text-transform: uppercase;
+}
+
+.friend-name {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--color-text);
+    transition: color .15s ease;
+}
+
+.post-card--friend:hover .friend-name { color: var(--color-link); }
+
+.friend-domain {
+    display: block;
+    margin-top: .15rem;
+    font-family: var(--font-mono);
+    font-size: .72rem;
+    color: var(--color-muted);
+    word-break: break-word;
+}
+
+/* The other addresses take the article footer's slot and its hairline. On a post
+   that rule means there is further to go; here it means the same thing, only
+   literally. Left-aligned rather than spread, because this is a list of unknown
+   length, and pushed to the card's foot so a wrapped name cannot misalign the
+   rules across a row. */
+.post-card--friend .post-card__meta {
+    justify-content: flex-start;
+    gap: .5rem;
+    margin-top: auto;
+    list-style: none;
+}
+
+.friend-links li {
+    display: flex;
+    gap: .5rem;
+}
+
+.friend-links li + li::before { content: "·"; }
+
+.friend-links a {
+    /* Above the card's stretched anchor, so each address stays its own target. */
+    position: relative;
+    z-index: 1;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-rule);
+}
+
+.friend-links a:hover {
+    color: var(--color-link);
+    border-bottom-color: currentColor;
+}
+
+/* Living inside .prose ───────────────────────────────────────────────────────
+   The page body is rendered Markdown, so every .prose rule reaches this markup
+   as a descendant and outranks an unqualified class. These restate only what
+   .prose would otherwise win — narrowing .prose itself would change body copy on
+   every post to suit one page. The three-class selector on the avatar is not
+   decoration: `.prose img:not(.gallery img)` is (0,2,2) and has to be beaten. */
+.prose .friend-list  { margin: 1.5rem 0; padding: 0; }
+.prose .friend-links { margin: auto 0 0; padding: 0; }
+
+.prose .friend-id .friend-avatar {
+    width: 48px;
+    height: 48px;
+    max-width: none;
+    margin: 0;
+    border-radius: 50%;
+    box-shadow: none;
+}
+
+/* Every link on a friends page leaves the site, so the ↗ that marks an outbound
+   link in running copy marks nothing here — it would sit inside the card's
+   footer and, on a friend with no photo, in the middle of the name lockup.
+   Four classes deep because the marker's own selector carries three plus three
+   type steps; anything shorter loses to it silently. */
+.prose .friend-list .post-card--friend .friend-id::after,
+.prose .friend-list .post-card--friend .friend-links a::after { content: none; }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 640px) {
+    /* The friends grid folds where the feed's does. One breakpoint, so the two
+       card layouts can never disagree about what counts as a phone. */
+    .post-list,
+    .friend-list { grid-template-columns: 1fr; }
+
+    /* Show hamburger, hide inline nav links */
+    .nav-toggle { display: flex; }
+
+    .site-header__inner { flex-wrap: nowrap; }
+
+    .site-nav {
+        display: flex;
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        gap: 0;
+        margin-right: 0;
+        background: var(--color-header-bg);
+        border-top: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-chrome-border);
+        padding: .375rem 0;
+        z-index: 100;
+        /* animation */
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transform: translateY(-6px);
+        transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s;
+    }
+
+    .site-nav.is-open {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transform: translateY(0);
+        transition: opacity .2s ease, transform .2s ease;
+    }
+
+    .site-nav a {
+        padding: .75rem 1.25rem;
+        font-size: .975rem;
+        border-radius: 0;
+    }
+
+    .site-nav a:hover {
+        background: var(--color-code-bg);
+        color: var(--color-text);
+    }
+
+    .site-nav__item {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .site-nav__sub,
+    .site-nav__item.has-children:hover > .site-nav__sub,
+    .site-nav__item.has-children:focus-within > .site-nav__sub {
+        position: static;
+        opacity: 1;
+        visibility: inherit;
+        pointer-events: inherit;
+        transform: none;
+        transition: none;
+        background: transparent;
+        border: none;
+        padding: 0;
+        min-width: 0;
+    }
+
+    .site-nav__sub a {
+        padding: .6rem 1.25rem .6rem 2.5rem;
+        font-size: .925rem;
+        color: var(--color-muted);
+    }
+}
+
+@media (max-width: 600px) {
+    html { font-size: 16px; }
+    body { padding: 0; }
+    .post-card__title { font-size: 1.4rem; }
+    .site-header__inner { gap: .5rem; }
+    .site-main { margin: 2rem auto 1.75rem; }
+
+    /* Narrow screens can't spare the gutters; hold the ratio between the kinds
+       rather than the absolute values. */
+    .post-card__inner { padding: 1.25rem; }
+    .post-card--note .post-card__inner { padding: 1rem 1.1rem; }
+    .post-card--photo .post-card__inner { padding: .9rem 1.1rem 1rem; }
+
+    .home-intro__text { font-size: 1.05rem; }
+
+    /* A 3-up crop is unreadable at this width — stack every gallery in one column. */
+    .post-card__gallery { grid-template-columns: 1fr !important; }
+    .post__photos:not([data-count="1"]) { grid-template-columns: 1fr; }
+    .post-card__gallery[data-count="3"] img:first-child { grid-row: auto; }
+    .post-card__gallery img {
+        aspect-ratio: auto;
+        height: auto;
+        max-height: 340px;
+        object-fit: cover;
+    }
+    .post-card__gallery[data-count="1"] img { max-height: 420px; object-fit: contain; }
+}
+
+/* ── Search (overlay) ─────────────────────────────────────────────────────── */
+/* Lives in the critical half deliberately: the overlay markup ships on every
+   page, so the rules that hide it must be inlined or the bare form flashes at
+   the foot of the document before the async stylesheet arrives. */
+
+.search-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 900; /* above the header (100), below the lightbox (1100) */
+    background: color-mix(in srgb, var(--color-bg) 55%, transparent);
+    backdrop-filter: blur(10px) saturate(70%);
+    -webkit-backdrop-filter: blur(10px) saturate(70%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .18s ease, visibility 0s linear .18s;
+}
+.search-overlay.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .18s ease;
+}
+
+/* Where blur is unavailable the tint has to carry the separation on its own. */
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+    .search-overlay { background: color-mix(in srgb, var(--color-bg) 94%, transparent); }
+}
+
+.search-overlay__panel {
+    width: min(700px, calc(100% - 3rem));
+    margin: 18vh auto 0;
+    transform: translateY(-8px);
+    transition: transform .18s ease;
+}
+.search-overlay.is-open .search-overlay__panel { transform: translateY(0); }
+
+/* One field, no box: the rule under the text is the whole control. */
+.search-overlay__field {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    padding-bottom: .5rem;
+    border-bottom: 2px solid var(--color-border);
+    transition: border-color .15s;
+}
+.search-overlay__field:focus-within { border-bottom-color: var(--color-link); }
+.search-overlay__field svg {
+    width: 1.15rem;
+    height: 1.15rem;
+    flex-shrink: 0;
+    color: var(--color-muted);
+}
+.search-overlay__field input[type="search"] {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    background: none;
+    outline: none;
+    color: var(--color-text);
+    /* The reading face, so the query looks like the prose it searches. */
+    font-family: var(--font-sans);
+    font-size: 1.5rem;
+    line-height: 1.3;
+    padding: 0;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.search-overlay__field input[type="search"]::placeholder { color: var(--color-muted); }
+.search-overlay__field input[type="search"]::-webkit-search-decoration,
+.search-overlay__field input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.search-overlay__hint {
+    margin-top: .75rem;
+    font-size: .8rem;
+    letter-spacing: .02em;
+    color: var(--color-muted);
+}
+.search-overlay__hint span { margin: 0 .35em; }
+
+@media (max-width: 600px) {
+    .search-overlay__panel { margin-top: 12vh; width: calc(100% - 2.5rem); }
+    /* Stays at 1.5rem — anything under 16px makes iOS zoom the viewport. */
+}
+
+/* ── Search results page ──────────────────────────────────────────────────── */
+/* Critical despite serving one page: this form is that page's above-the-fold
+   content and it autofocuses, so an unstyled default input reflowing into the
+   flex row would move the control the cursor is already sitting in. */
+.search-page { max-width: var(--max-content); margin: 0 auto; }
+.search-page__title { margin-bottom: 1.5rem; }
+
+.search-page__form {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 2.5rem;
+}
+.search-page__form input[type="search"] {
+    flex: 1;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 1rem;
+    padding: .5rem .75rem;
+    outline: none;
+    transition: border-color .15s;
+}
+.search-page__form input[type="search"]:focus { border-color: var(--color-link); }
+/* color is --color-bg, not #fff, and the magnifier strokes with currentColor:
+   --color-link is a deep navy on paper but a pale sky in dark mode, where white
+   on it lands around 1.9:1. The page's own ground colour inverts with the theme
+   and clears 7:1 both ways. */
+.search-page__form button {
+    background: var(--color-link);
+    color: var(--color-bg);
+    border: none;
+    border-radius: var(--radius);
+    padding: .5rem 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    line-height: 0;
+    transition: background .15s;
+}
+.search-page__form button:hover { background: color-mix(in srgb, var(--color-link) 90%, #000); }
+.search-page__form button svg { width: 1rem; height: 1rem; }
+
+.search-empty { color: var(--color-muted); font-style: italic; }
+
+/* ── Site footer ──────────────────────────────────────────────────────────── */
+/* Critical: on short pages (search results, 404) the footer sits inside the
+   first viewport, and the inline social icons balloon to their intrinsic size
+   until these rules land. */
+.site-footer {
+    /* border-top: 1px solid var(--color-chrome-border); */
+    padding: 1.5rem 0;
+    font-size: .85rem;
+    color: var(--color-muted);
+    background: var(--color-chrome-bg);
+}
+
+.site-footer__inner {
+    max-width: var(--max-content);
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.site-footer__links {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+}
+
+/* ── Social links ─────────────────────────────────────────────────────────── */
+/* Shared by the footer and the home page h-card (partials/social-links.php).
+   Muted until hovered, when each link takes its own network's colour — the one
+   place on the site where a brand colour other than ours is allowed to show. */
+.social-link {
+    display: flex;
+    align-items: center;
+    color: var(--color-muted);
+    text-decoration: none;
+}
+
+.social-link svg { width: .9rem; height: .9rem; flex-shrink: 0; }
+
+.social-link--feed:hover     { color: #f26522; }
+.social-link--mastodon:hover { color: #6364ff; }
+.social-link--bluesky:hover  { color: #0085ff; }
+/* Pixelfed's mark is a six-stop rainbow, so there is no flat brand colour to
+   take. This is the magenta from its own gradient rather than the #6366f1 the
+   icon sets flatten it to — that value is three hex digits from the Mastodon
+   indigo directly above, and two neighbouring icons that light up the same
+   colour defeat the point of the rule. */
+.social-link--pixelfed:hover { color: #eb0256; }
+.social-link--github:hover   { color: var(--color-text); }
+
+/* =END CRITICAL= */
+
+/* Everything below is deferred: it renders below the fold, behind an
+   interaction, or only on a specific page type. Sections keep their original
+   relative order — no rule changes which one wins. */
+
+/* ── Syntax highlighting — xcode-dark theme ───────────────────────────────── */
+
+.prose pre.syntax-hl {
+    background: #232323;
+    color:      #dfdfe0;
+    /* These blocks stay dark in light mode, so they need their own dark
+       scrollbar rather than the one the page theme would give them. */
+    color-scheme: dark;
+}
+
+/* In dark mode the page bg is #1E1E1E — bump the code block to be clearly distinct */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .prose pre.syntax-hl { background: #2B2B2B; }
+}
+[data-theme="dark"] .prose pre.syntax-hl { background: #2B2B2B; }
+
+/* Copy button adjustments for dark code blocks */
+.code-block--dark .code-copy          { color: #6c7986; }
+.code-block--dark .code-copy:hover    { color: #dfdfe0; border-color: #3D3D3D; background: #2B2B2B; }
+.code-block--dark .code-copy--copied,
+.code-block--dark .code-copy--copied:hover { color: #fff; background: #4C7A2E; border-color: #4C7A2E; opacity: 1; }
+
+/* Token colours */
+.hljs-comment,
+.hljs-quote                    { color: #6c7986; font-style: italic; }
+
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-operator                 { color: #ff7ab2; }
+
+.hljs-string,
+.hljs-attr,
+.hljs-selector-attr            { color: #ff8170; }
+
+.hljs-number,
+.hljs-literal                  { color: #d9c97c; }
+
+.hljs-built_in,
+.hljs-title,
+.hljs-title.function_          { color: #4eb0cc; }
+
+.hljs-type,
+.hljs-class .hljs-title,
+.hljs-variable                 { color: #dabaff; }
+
+.hljs-meta,
+.hljs-params                   { color: #dfdfe0; }
+
+.hljs-addition                 { color: #63da58; background: #1a3320; }
+.hljs-deletion                 { color: #ff8170; background: #3d1a18; }
+
+/* Images / media inside prose. The `img` rules that used to live here — shadow,
+   radius, sizing and the wide-viewport bleed — moved into the critical half so
+   they could be shared with .post__featured; see the comment there. Video and
+   audio keep their own spacing, which nothing else needs. */
+.prose video,
+.prose audio { margin-top: 1.5em; margin-bottom: 1.5em; }
+
+.prose figure { margin-top: 1.5em; }
+.prose figcaption {
+    font-size: .825rem;
+    color: var(--color-muted);
+    margin-top: -2em;
+    margin-bottom: 2em;
+    text-align: center;
+    font-style: italic;
+}
+
+/* ── Notices / callouts ───────────────────────────────────────────────────── */
+.notice,
+.information,
+.warning {
+    border-left: 3px solid;
+    /* border-radius: 4px; */
+    padding: .75em 1em;
+    margin: 1.5em 0;
+}
+
+/* Diluted into the page grey these would read washed out, so they sit a
+   little more saturated than their fill percentage suggests. */
+.notice {
+    border-color: #2E72B0;
+    background: color-mix(in srgb, #2E72B0 13%, var(--color-bg));
+}
+
+.information {
+    border-color: #C1820B;
+    background: color-mix(in srgb, #C1820B 14%, var(--color-bg));
+}
+
+.warning {
+    border-color: #B3341F;
+    background: color-mix(in srgb, #B3341F 10%, var(--color-bg));
+}
+
+/* ── Button-style link ────────────────────────────────────────────────────── */
+.button-link {
+    display: inline-block;
+    background: var(--color-link);
+    /* --color-bg, not #fff: this was built to match the search form's fill, and
+       that button now takes the page's ground colour so its label inverts with
+       the theme instead of sitting at ~1.9:1 white-on-sky in dark mode. */
+    color: var(--color-bg);
+    text-decoration: none;
+    border: none;
+    border-radius: var(--radius);
+    padding: .5rem 1rem;
+    margin: 3px;
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1.2;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.button-link:hover {
+    background: color-mix(in srgb, var(--color-link) 90%, #000);
+    text-decoration: none;
+    color: var(--color-bg);
+}
+
+/* ── Pagination ───────────────────────────────────────────────────────────── */
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    font-size: .9rem;
+}
+
+.pagination__info { color: var(--color-muted); }
+
+.pagination__prev--disabled,
+.pagination__next--disabled {
+    color: var(--color-border);
+    cursor: default;
+    text-decoration: none;
+}
+
+/* ── Footnotes ────────────────────────────────────────────────────────────── */
+.footnotes {
+    font-size: .85rem;
+    color: var(--color-muted);
+    font-family: var(--font-sans);
+}
+
+.footnotes ol { padding-left: 1.5em; }
+.footnotes li + li { margin-top: .4em; }
+.footnotes p { margin-top: 0; }
+
+.footnote-ref {
+    font-size: .75em;
+    vertical-align: super;
+    line-height: 0;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.footnote-backref {
+    text-decoration: none;
+    margin-left: .25em;
+}
+
+/* ── Post syndication footer ──────────────────────────────────────────────── */
+.post__syndication {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .275rem;
+    margin-top: 2rem;
+    font-size: .75rem;
+    color: var(--color-muted);
+}
+
+.post__syndication a {
+    color: var(--color-muted);
+    text-decoration: none;
+    font-weight: 400;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: .1rem .5rem;
+    line-height: 1.4;
+    transition: color .15s, border-color .15s;
+}
+
+.post__syndication a:hover {
+    color: var(--color-text);
+    border-color: currentColor;
+}
+
+.tinylytics_kudos {
+    display: inline-flex;
+    align-items: center;
+    gap: .25em;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: .1rem .5rem;
+    font-size: inherit;
+    line-height: 1.4;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+}
+
+.tinylytics_kudos:hover,
+.tinylytics_kudos.did_select {
+    color: var(--color-text);
+    border-color: currentColor;
+}
+
+/* ── Manual webmention submission ─────────────────────────────────────────── */
+/* The pill lives in the syndication row and the form is a sibling after it, so
+   the drawer opens across the measure without the pill leaving the row. The
+   checkbox that ties them together sits before both — see the note in
+   templates/post.php for why it is not a <details>.
+
+   Hidden by clipping rather than display:none, which would take it out of the
+   tab order and leave the disclosure keyboard-unreachable. */
+.wm-submit__checkbox {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    clip-path: inset(50%);
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+/* Identical to a .post__syndication pill, so the row reads as one set. */
+.wm-submit__toggle {
+    display: inline-block;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: .1rem .5rem;
+    line-height: 1.4;
+    color: var(--color-muted);
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+}
+
+/* Open is the hover state held: the pill stays lit while its drawer is showing,
+   so it is obvious which control opened the thing below it. */
+.wm-submit__toggle:hover,
+.wm-submit__checkbox:checked ~ .post__syndication .wm-submit__toggle {
+    color: var(--color-text);
+    border-color: currentColor;
+}
+
+/* The clipped checkbox is what actually holds focus, so its ring has to be
+   forwarded to the pill or tabbing to the control shows nothing at all. Same
+   spec as the theme's global :focus-visible. */
+.wm-submit__checkbox:focus-visible ~ .post__syndication .wm-submit__toggle {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+}
+
+/* The type is restated rather than inherited: the form used to sit inside
+   .post__syndication and took its .75rem muted scale from there. Out here it is
+   a sibling of the row, so without this the label comes back at body size and
+   shouts over the article it is attached to. */
+.wm-submit__form {
+    display: none;
+    max-width: 100%;
+    margin-top: .625rem;
+    font-size: .75rem;
+    color: var(--color-muted);
+}
+
+.wm-submit__checkbox:checked ~ .wm-submit__form { display: block; }
+
+.wm-submit__label {
+    display: block;
+    margin-bottom: .375rem;
+    line-height: 1.5;
+}
+
+.wm-submit__row,
+.subscribe__row {
+    display: flex;
+    gap: .375rem;
+}
+
+/* The field matches .search-page__form — the theme's one existing text input —
+   down to the shared --radius. 1rem is not a whim either: iOS zooms the viewport
+   on focus for anything smaller, which would throw the reader out of the page
+   they are trying to respond to. */
+.wm-submit__input,
+.subscribe__input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 1rem;
+    padding: .5rem .75rem;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.wm-submit__input:focus,
+.subscribe__input:focus { border-color: var(--color-link); }
+
+/* The label is --color-bg, not #fff: --color-link is a deep navy on paper but a
+   pale sky in dark mode, where white text on it lands around 1.9:1 and is barely
+   readable. Taking the page's own ground colour inverts with the theme and clears
+   7:1 both ways. .search-page__form button takes the same token for the same
+   reason. */
+.wm-submit__send,
+.subscribe__send {
+    flex: none;
+    background: var(--color-link);
+    color: var(--color-bg);
+    border: none;
+    border-radius: var(--radius);
+    padding: .5rem 1rem;
+    font: inherit;
+    font-size: .875rem;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.wm-submit__send:hover,
+.subscribe__send:hover { background: color-mix(in srgb, var(--color-link) 90%, #000); }
+
+.wm-submit__status,
+.subscribe__status {
+    margin-top: .5rem;
+    line-height: 1.5;
+}
+
+/* A state class rather than the hidden attribute on these two: both set display
+   from a class selector, which outranks the UA's [hidden] { display: none } and
+   would leave the form sitting under its own "Sent" message. */
+.wm-submit__form.is-sent .wm-submit__label,
+.wm-submit__form.is-sent .wm-submit__row {
+    display: none;
+}
+
+/* ── Newsletter signup ───────────────────────────────────────────────────── */
+/* Below the critical marker: it sits after the article, never in first paint.
+
+   A panel on the code-block fill, with no border: a quiet tinted well the
+   reader lands on at the end of the piece, set apart by tone alone and centred
+   because it is one offer with nothing to scan. The field and button keep the
+   webmention form's rules (shared above), so the site has one text-and-send
+   control. The field's --color-bg fill is what makes it read as recessed into
+   the panel rather than floating on it. */
+.subscribe {
+    margin-top: 2.5rem;
+    padding: 1.75rem 1.25rem;
+    background: var(--color-code-bg);
+    border-radius: var(--radius);
+    text-align: center;
+    color: var(--color-text);
+}
+
+/* Two classes deep so it holds inside .prose, whose paragraph margins would
+   otherwise win when the form arrives through the [subscribe] shortcode. */
+.subscribe .subscribe__label {
+    max-width: 30rem;
+    margin: 0 auto 1rem;
+    font-size: .8375rem;
+    line-height: 1.55;
+}
+
+/* Width and centring only — the gap stays on the shared rule above, so the two
+   text-and-send controls sit their buttons the same distance from the field. */
+.subscribe__row {
+    max-width: 32rem;
+    margin: 0 auto;
+}
+
+/* Full text colour, not --color-muted: on the code-bg panel muted lands at
+   4.42:1 in light mode, under AA for text this size. */
+.subscribe .subscribe__status {
+    margin: .75rem 0 0;
+    font-size: .875rem;
+    color: var(--color-text);
+}
+
+/* In a page body it sits in running prose, which sets its own rhythm. */
+.prose .subscribe { margin-top: 1.5rem; }
+
+/* The honeypot: off-screen rather than display:none, which some bots skip. */
+.subscribe__hp {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+/* Same state-class reasoning as .wm-submit__form.is-sent: the row's display
+   comes from a class selector, which would outrank [hidden]. */
+.subscribe.is-sent .subscribe__label,
+.subscribe.is-sent .subscribe__row {
+    display: none;
+}
+
+.subscribe.is-sent .subscribe__status {
+    margin-top: 0;
+    font-size: .9375rem;
+}
+
+/* subscribe.php's own reply page, for a reader without JavaScript. */
+.subscribe-result {
+    max-width: 36rem;
+    margin: 4rem auto;
+    padding: 0 1rem;
+}
+
+/* ── Related posts ───────────────────────────────────────────────────────── */
+/* Sits below the critical marker: this block is at the foot of a post and is
+   never part of the first paint.
+
+   These items stay at page tone rather than becoming white cards. The theme's
+   rule is that an article lifts off the paper and a note recesses into it
+   (see --color-card-tint), so giving these the surface fill would claim they
+   are three more articles sitting right here, competing with the one just
+   read. They are pointers, so they recess. */
+.related-posts {
+    margin-top: 3rem;
+}
+
+/* The eyebrow is deliberately the exact spec as .post-nav__label below, so the
+   two blocks at the foot of a post read as one system rather than as two
+   unrelated widgets that happen to be adjacent. */
+.related-posts__title {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+}
+
+.related-posts__list {
+    display: grid;
+    /* auto-fit rather than a fixed 3: findRelated() can return one or two, and
+       a short list should fill the measure instead of leaving column-shaped
+       holes where the missing posts would have been. */
+    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+    gap: 2rem;
+    /* Items are independent: a title that wraps to three lines must not drag
+       its neighbours' dates down with it. */
+    align-items: start;
+    list-style: none;
+}
+
+/* The per-item rule is what holds the row together. A thumbnail is optional
+   here and, on this site, usually absent — most titled posts carry no photo —
+   so a row mixing one picture with two bare titles has no shared top edge and
+   reads as a mistake. The rule supplies that edge whatever the items contain,
+   and three hairlines abreast directly above .post-nav's single full-width one
+   make the foot of the page a deliberate ruled system. */
+.related-posts__item {
+    position: relative;
+    border-top: 1px solid var(--color-border);
+    padding-top: .85rem;
+    transition: border-color .15s ease;
+}
+
+.related-posts__item:hover {
+    border-top-color: var(--color-border-hover);
+}
+
+.related-posts__thumb {
+    margin-bottom: .7rem;
+}
+
+.related-posts__thumb img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 3 / 2;
+    object-fit: cover;
+    border-radius: var(--radius);
+}
+
+.related-posts__link {
+    display: block;
+    font-size: .9rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--color-text);
+    text-decoration: none;
+    transition: color .15s ease;
+}
+
+/* Stretch the permalink over the whole item, the same affordance .post-card
+   gives its title. Nothing else in the item is interactive, so there is no
+   inline link needing to be lifted above this one. */
+.related-posts__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+}
+
+.related-posts__item:hover .related-posts__link {
+    color: var(--color-link);
+}
+
+/* Muted like the eyebrow above, told apart by case rather than by size, so the
+   two quiet elements in the block don't read as the same kind of label. */
+.related-posts__date {
+    display: block;
+    margin-top: .35rem;
+    font-size: .75rem;
+    color: var(--color-muted);
+}
+
+@media (max-width: 600px) {
+    /* Tighter here than on the desktop grid: one column stacks the block far
+       taller, and it is the last thing before .post-nav. */
+    .related-posts {
+        margin-top: 2.25rem;
+    }
+
+    .related-posts__title {
+        margin-bottom: .75rem;
+    }
+
+    /* One column. Stated explicitly rather than left to auto-fit: two 11rem
+       columns still fit at this width, which would strand the third item
+       alone on its own row. */
+    .related-posts__list {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    /* No thumbnails on a phone. At full width they are the largest thing in
+       the block by some distance, and a pointer to something you have not
+       read yet does not earn that much of a small screen. Titles alone make
+       the list scannable in a single glance. */
+    .related-posts__thumb {
+        display: none;
+    }
+
+    /* And no rules, with the pictures gone. The hairline exists to give a row
+       of mixed items — one with a thumbnail, two without — a shared top edge;
+       a single-column list of bare titles has neither a row to align nor any
+       unevenness to correct. Stacked, the three lines read as empty headings
+       sitting above the titles they belong to, so the gap does the separating
+       instead. */
+    .related-posts__item {
+        border-top: 0;
+        padding-top: 0;
+    }
+}
+
+/* ── Post navigation (prev / next) ────────────────────────────────────────── */
+.post-nav {
+    display: flex;
+    gap: 2rem;
+    margin-top: 3rem;
+    margin-bottom: .5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+    line-height: 1.3;
+}
+
+.post-nav__prev { max-width: 45%; }
+
+.post-nav__next {
+    max-width: 45%;
+    margin-left: auto;
+    text-align: right;
+}
+
+.post-nav__link {
+    font-size: .9rem;
+    font-weight: 700;
+    color: var(--color-text);
+    text-decoration: none;
+    line-height: 1.3;
+}
+
+.post-nav__label {
+    display: block;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--color-muted);
+    margin-bottom: .35rem;
+}
+
+.post-nav__next .post-nav__label { text-align: right; }
+
+.post-nav__link:hover { color: var(--color-link); }
+
+@media (max-width: 600px) {
+    .post-nav { flex-direction: column; gap: 1.25rem; }
+    .post-nav__prev,
+    .post-nav__next { max-width: 100%; text-align: left; margin-left: 0; }
+    .post-nav__next .post-nav__label { text-align: left; }
+}
+
+/* ── 404 error page ──────────────────────────────────────────────────────── */
+.error-page {
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.error-page__code {
+    font-size: 6rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--color-muted);
+    margin: 0 0 1rem;
+}
+
+.error-page__message {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 .5rem;
+}
+
+.error-page__hint {
+    color: var(--color-muted);
+    margin: 0 0 2rem;
+}
+
+.error-page__actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.btn {
+    display: inline-block;
+    padding: .5rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    font-size: .9rem;
+    text-decoration: none;
+    color: var(--color-text);
+    transition: background-color .15s, border-color .15s;
+}
+
+.btn:hover {
+    background-color: var(--color-border);
+    border-color: var(--color-muted);
+}
+
+
+/* An image written into a post's body opens in the lightbox — see theme.js,
+   which collects these alongside the marked-up gallery items. */
+.prose img { cursor: zoom-in; }
+
+/* Except one the author linked somewhere: that link wins, and the pointer
+   should say so. Inside a gallery item the anchor is itself zoom-in, so
+   inheriting is right in both cases. */
+.prose a img { cursor: inherit; }
+
+
+/* ── Tiled gallery ────────────────────────────────────────────────────────── */
+
+/* Mondrian-style fixed templates per image count. PHP emits .gallery--tiles-N
+   and inline `style="grid-area:a"` per item. Galleries with 8+ images are split
+   into sibling .gallery blocks server-side. */
+
+.gallery {
+    display: grid;
+    gap: 6px;
+    margin: 2rem 0;
+    aspect-ratio: 3 / 2;
+}
+
+.gallery:has(+ .gallery) { margin-bottom: 0; }
+.gallery + .gallery { margin-top: 6px; }
+
+.gallery__item {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--color-code-bg);
+    cursor: zoom-in;
+}
+
+.gallery__item picture,
+.gallery__item img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    margin: 0;
+}
+
+.gallery__item img {
+    object-fit: cover;
+    transition: opacity .15s;
+}
+
+.gallery__item:hover img { opacity: .88; }
+
+.gallery--tiles-1 {
+    grid-template-areas: "a";
+}
+
+.gallery--tiles-2 {
+    aspect-ratio: 2 / 1;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "a b";
+}
+
+.gallery--tiles-3 {
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+        "a b"
+        "a c";
+}
+
+.gallery--tiles-4 {
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+        "a b c"
+        "a d d";
+}
+
+.gallery--tiles-5 {
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+        "a b c"
+        "a d e";
+}
+
+.gallery--tiles-6 {
+    aspect-ratio: 4 / 3;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+    grid-template-areas:
+        "a b c"
+        "a d e"
+        "a f f";
+}
+
+.gallery--tiles-7 {
+    aspect-ratio: 4 / 3;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+        "a b c d"
+        "a e f g";
+}
+
+@media (max-width: 600px) {
+    .gallery {
+        aspect-ratio: auto;
+        grid-template-columns: 1fr 1fr !important;
+        grid-template-rows: none !important;
+        grid-template-areas: none !important;
+        grid-auto-rows: 1fr;
+    }
+    .gallery__item {
+        grid-area: auto !important;
+        aspect-ratio: 1 / 1;
+    }
+}
+
+/* ── Lightbox ─────────────────────────────────────────────────────────────── */
+
+/* The one lightbox: tiled galleries, a photo post's attached pictures, and
+   images written into a post's body all open here. The class names predate
+   the other two joining. */
+
+.gallery-lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    background: rgba(20,20,20,.94);
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 4rem;
+    cursor: zoom-out;
+}
+
+.gallery-lightbox.is-open { display: flex; }
+
+.gallery-lightbox__img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    box-shadow: 0 8px 40px rgba(0,0,0,.6);
+    cursor: default;
+}
+
+.gallery-lightbox__btn {
+    position: fixed;
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    opacity: .75;
+    line-height: 1;
+    padding: .25rem .5rem;
+    transition: opacity .15s;
+}
+
+.gallery-lightbox__btn:hover { opacity: 1; }
+
+.gallery-lightbox__close {
+    top: 1rem;
+    right: 1.25rem;
+    font-size: 2rem;
+}
+
+.gallery-lightbox__prev,
+.gallery-lightbox__next {
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 3.5rem;
+}
+
+.gallery-lightbox__prev { left: .75rem; }
+.gallery-lightbox__next { right: .75rem; }
+
+/* ── Shortcode embeds ─────────────────────────────────────────────────────── */
+
+/* 16:9 ratio wrapper for YouTube and Vimeo iframes */
+.embed-video {
+    position: relative;
+    margin: 2rem 0;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    background: #000;
+}
+
+.embed-video iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* GitHub Gist (static .pibb iframe — no external JS in the page) */
+.embed-gist {
+    margin: 2rem 0;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    
+}
+
+.embed-gist iframe {
+    width: 100%;
+    min-height: 200px;
+    border: 0;
+    display: block;
+}
+
+.gist {
+    font-family: var(--font-mono);
+    font-size: .8rem;
+}
+
+/* Mastodon and LinkedIn iframe embeds */
+.embed-social {
+    margin: 2rem 0;
+    display: flex;
+    justify-content: center;
+}
+
+.embed-social iframe {
+    max-width: 100%;
+    border: 0;
+    border-radius: var(--radius);
+}
+
+.embed-social--linkedin iframe {
+    width: 504px;
+    height: 285px;
+}
+
+/* Instagram and Twitter blockquote fallback cards */
+.embed-card {
+    margin: 2rem 0;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-code-bg);
+}
+
+/* ── Webmentions ──────────────────────────────────────────────────────────── */
+
+.webmentions {
+    display: none;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.webmentions--loaded { display: block; }
+
+.webmentions__title {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--color-muted);
+    margin-bottom: 1.25rem;
+}
+
+/* Reactions (likes + reposts) */
+.webmentions__reactions { margin-bottom: 1.5rem; }
+
+.wm-counts {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: .75rem;
+}
+
+.wm-count {
+    display: flex;
+    align-items: center;
+    gap: .3em;
+    font-size: .875rem;
+    color: var(--color-muted);
+}
+
+.wm-avatars {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+}
+
+/* Circles, on the reasoning written above .site-header__avatar — these are the
+   same object at a different size. The link wrapper carries the radius too so a
+   focus ring follows the face rather than boxing it. */
+.wm-avatar-link {
+    display: block;
+    line-height: 0;
+    border-radius: 50%;
+    transition: opacity .15s;
+}
+
+.wm-avatar-link:hover { opacity: .8; }
+
+.wm-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--color-code-bg);
+    display: block;
+}
+
+.wm-avatar--sm {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+}
+
+.wm-avatar--fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-code-bg);
+    color: var(--color-muted);
+    font-size: .7rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+/* Replies */
+.webmentions__replies { margin-top: .25rem; }
+
+.webmentions__reactions + .webmentions__replies {
+    margin-top: 0;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.wm-group-label {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--color-muted);
+    margin-bottom: .9rem;
+}
+
+.wm-reply {
+    border: 1px solid var(--color-border);
+    padding: 1rem 1.1rem;
+    margin-bottom: .65rem;
+    transition: border-color .15s;
+    border-radius: var(--radius);
+}
+
+.wm-reply:hover { border-color: var(--color-border-hover); }
+
+.wm-reply__header {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin-bottom: .6rem;
+}
+
+.wm-reply__meta {
+    display: flex;
+    flex-direction: column;
+    gap: .1em;
+    line-height: 1.2;
+    min-width: 0;
+}
+
+.wm-reply__author {
+    font-weight: 700;
+    font-size: .875rem;
+    color: var(--color-text);
+    text-decoration: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wm-reply__author:hover { color: var(--color-link); }
+
+.wm-reply__date-link { text-decoration: none; }
+
+.wm-reply__date {
+    font-size: .8rem;
+    color: var(--color-muted);
+}
+
+.wm-reply__date-link:hover .wm-reply__date { color: var(--color-link); }
+
+.wm-reply__content {
+    font-size: .9rem;
+    color: var(--color-text);
+    line-height: 1.55;
+    margin: 0;
+}
+
+/* ── Taxonomy archive (category / tag) ───────────────────────────────────── */
+.taxonomy-archive__header {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.taxonomy-archive__type {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--color-muted);
+    margin: 0 0 .25rem;
+}
+
+.taxonomy-archive__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 .5rem;
+}
+
+.taxonomy-archive__description {
+    color: var(--color-muted);
+    margin: 0;
+}

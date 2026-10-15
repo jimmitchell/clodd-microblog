@@ -61,13 +61,14 @@ params:
   show_reading_time: true
   photos_category: Photos   # see "Post kinds"
   home_intro: ""            # after "Hey, I'm <name>." Falls back to author.bio
+  footer_text: ""           # Markdown; empty shows "© <year> <site title>"
   custom_css: ""            # injected after the theme's styles
   google_site_verification: ""
 
   author:
     name: Sam Example
     bio: I write about the open web.
-    avatar: images/avatar.png
+    avatar: images/avatar.png  # under assets/ to inline it in the header
     email: sam@example.org   # shows the Email reply pill
 
   social:                    # footer and h-card icons, all rel="me"
@@ -113,6 +114,14 @@ menus:
     - { name: About, pageRef: /about, weight: 10 }
     - { name: Now, pageRef: /now, parent: About, weight: 11 }
 ```
+
+### Hooks
+
+Two empty partials let a site add markup without overriding a theme template: `layouts/_partials/hooks/head-end.html` (end of `<head>`) and `layouts/_partials/hooks/body-end.html` (just before `</body>`).
+
+### Search
+
+The header shows a search button, and the search overlay, when the site has a page at `/search` (for example `content/search.md`).
 
 ## Post kinds
 
