@@ -1,0 +1,6 @@
+public/
+resources/_gen/
+.hugo_build.lock
+exampleSite/public/
+exampleSite/resources/
+.DS_Store

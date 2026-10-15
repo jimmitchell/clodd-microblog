@@ -1,0 +1,174 @@
+# Clodd for Hugo
+
+The public theme of [Clodd CMS](https://github.com/jimmitchell/clodd-cms), ported to Hugo. It's a personal site built around three kinds of post (articles, notes and photos), marked up for the IndieWeb.
+
+> **Status: in development.** The repo is scaffolded and the example site builds, but the layouts are placeholders. See [docs/PLAN.md](docs/PLAN.md) for what's done and what's next.
+
+## Features
+
+- **Three post kinds.** Articles have titles. Notes have none and show their whole body on the home page. Photo posts lead with their pictures. The kind comes from the content, so no extra front matter is needed.
+- **Microformats2.** A representative `h-card` on the home page, an `h-feed` on every list, and full `h-entry` markup on posts. That covers `p-name`, `p-author`, `dt-published`, `dt-updated`, `e-content`, `u-photo`, `u-featured`, `p-category`, `u-syndication`, `u-in-reply-to`, `u-like-of`, `u-repost-of`, `u-bookmark-of` and `p-rsvp`.
+- **Replies, likes, reposts, bookmarks and RSVPs**, from front matter.
+- **Webmentions** via [webmention.io]: likes and reposts as an avatar grid, replies as threaded cards, and a form for sending one by hand.
+- **Discovery.** `rel="me"` links (with `rel="atproto"` for Bluesky), IndieAuth (with an [IndieKey] shortcut), Micropub, webmention/pingback, `fediverse:creator`, and Bridgy Fed verification.
+- **Feeds.** RSS, Atom and JSON Feed, with [Byline] author elements, plus a feed for every category and tag.
+- **Dark and light modes.** Follows the system setting, with a three-way toggle and no flash of the wrong theme on load.
+- Self-hosted DM Sans, with critical CSS inlined.
+- **Search** with [Pagefind], from an overlay or a results page.
+- An archive by year and month, a photos grid, and a random-post page.
+- Lightbox, code copy buttons and `xcode-dark` syntax highlighting.
+- **Shortcodes:** a Mondrian-style `gallery`, plus privacy-friendly `youtube`, `vimeo`, `gist`, `mastodon`, `instagram`, `tweet` and `linkedin` embeds.
+- A generated Open Graph card for each post, JSON-LD `BlogPosting`, and a 404 page that offers the Wayback Machine's copy.
+- **Optional extras:** [Tinylytics] with a Kudos button, an Email reply pill, and an EmailOctopus signup form.
+
+## Installation
+
+As a Hugo module (needs [Go](https://go.dev/dl/)):
+
+```yaml
+# hugo.yaml
+module:
+  imports:
+    - path: github.com/jimmitchell/hugo-theme-clodd
+```
+
+```sh
+hugo mod init github.com/<you>/<your-site>
+hugo mod get -u
+```
+
+Or as a git submodule:
+
+```sh
+git submodule add https://github.com/jimmitchell/hugo-theme-clodd themes/clodd
+```
+
+```yaml
+theme: clodd
+```
+
+Hugo 0.158.0 or newer, extended edition.
+
+## Configuration
+
+Everything goes under `params`, and all of it is optional. The defaults are in [hugo.toml](hugo.toml). [exampleSite/hugo.yaml](exampleSite/hugo.yaml) is a complete working config.
+
+```yaml
+params:
+  description: Personal site and writing of Sam Example.
+  date_format: January 2, 2006               # post pages (Go layout)
+  card_date_format: Monday, January 2, 2006  # home and archive cards
+  show_reading_time: true
+  photos_category: Photos   # see "Post kinds"
+  home_intro: ""            # after "Hey, I'm <name>." Falls back to author.bio
+  custom_css: ""            # injected after the theme's styles
+  google_site_verification: ""
+
+  author:
+    name: Sam Example
+    bio: I write about the open web.
+    avatar: images/avatar.png
+    email: sam@example.org   # shows the Email reply pill
+
+  social:                    # footer and h-card icons, all rel="me"
+    mastodon: "@sam@mastodon.example"   # also emitted as fediverse:creator
+    bluesky: https://bsky.app/profile/sam.example.org
+    pixelfed: https://pixelfed.example/sam
+    github: https://github.com/sam
+
+  rel_me: []                 # more rel="me" links, <head> only
+  bridgy_fed: false          # rel="me" for Bridgy Fed verification
+
+  indieauth:
+    indiekey: ""             # an indiekey.id site ID fills in all three below
+    metadata: ""
+    authorization_endpoint: ""
+    token_endpoint: ""
+  micropub: ""               # Micropub endpoint URL
+
+  webmentions:
+    domain: example.org      # as registered at webmention.io
+    link_tags: []            # e.g. ["ref=example.com"], see below
+
+  tinylytics:
+    code: ""
+    kudos: ""                # an emoji; shows the Kudos button
+    events: false
+
+  search:
+    pagefind: true
+  feeds:
+    byline: true
+```
+
+`webmentions.link_tags` is for sites that add a query string to their outbound links, such as Ghost's `?ref=`. webmention.io stores the target URL exactly as it was sent, so a mention of `/post/?ref=example.com` would otherwise never show on `/post/`. Each tag is asked about alongside the post's own URL.
+
+### Menus
+
+The header navigation is `menus.main`. An entry with a `parent` appears in that item's dropdown on desktop and indented on mobile.
+
+```yaml
+menus:
+  main:
+    - { name: About, pageRef: /about, weight: 10 }
+    - { name: Now, pageRef: /now, parent: About, weight: 11 }
+```
+
+## Post kinds
+
+| Kind | How it's recognised | Card | Page |
+|---|---|---|---|
+| Article | Has a `title` | Title, summary, date and reading time | Heading, byline, reading time, category and tag pills |
+| Note | No `title` | The whole body | No heading or byline |
+| Photo | No `title`, and either in `photos_category` or mostly images | Picture first, edge to edge | Pictures, then caption |
+
+## Front matter
+
+All of these keys are optional.
+
+```yaml
+title: ""            # leave out for a note
+summary: ""          # card text, feed summary, meta description
+categories: []
+tags: []
+
+featured: /media/2026/10/lead.jpg   # an article's lead picture (u-featured)
+featured_alt: ""
+# Without featured, an article whose body begins with an image uses that one.
+
+in_reply_to: [https://…]   # each renders as a context line above the body
+like_of: [https://…]
+repost_of: [https://…]
+bookmark_of: [https://…]
+rsvp: "yes"                # yes | no | maybe | interested; goes with in_reply_to
+
+syndication:               # copies elsewhere, shown as pills, u-syndication
+  - https://mastodon.example/@sam/115000000000000001
+  - https://bsky.app/profile/sam.example.org/post/3kexample
+```
+
+Syndication pills are labelled by host: Mastodon (any URL with an `/@user/<id>` path), Bluesky, Pixelfed, or the hostname otherwise.
+
+The theme ignores two more keys. A companion GitHub Action reads them to decide where a new post is syndicated: `posse: false` opts a post out, and `syndicate_to: [mastodon]` narrows its targets.
+
+## Development
+
+```sh
+hugo server -s exampleSite --themesDir ../..
+```
+
+The example site has a post of every kind and every interaction type.
+
+## Credits
+
+The design, markup and scripts come from [Clodd CMS](https://github.com/jimmitchell/clodd-cms). DM Sans is by Colophon Foundry, under the SIL Open Font License.
+
+## License
+
+MIT
+
+[webmention.io]: https://webmention.io/
+[IndieKey]: https://indiekey.id/
+[Byline]: https://bylinespec.org/1.0
+[Pagefind]: https://pagefind.app/
+[Tinylytics]: https://tinylytics.app/

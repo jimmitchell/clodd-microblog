@@ -1,0 +1,74 @@
+# Theme defaults. A site's own config wins over everything here; params merge
+# key by key, so a site sets only what it changes. Every key is documented in
+# README.md under "Configuration".
+
+[module.hugoVersion]
+  min = "0.158.0"
+  extended = true
+
+[params]
+  description = ""
+
+  # Dates use Go layouts. The post page and the cards differ, as in Clodd.
+  date_format = "January 2, 2006"
+  card_date_format = "Monday, January 2, 2006"
+  show_reading_time = true
+
+  # A titleless post in this category, or one that is mostly pictures, is
+  # a photo post. See "Post kinds" in README.md.
+  photos_category = "Photos"
+
+  # Text after "Hey, I'm <name>." on the home page h-card. Falls back to
+  # author.bio, then to the body of content/_index.md.
+  home_intro = ""
+
+  custom_css = ""
+  google_site_verification = ""
+
+  [params.author]
+    name = ""
+    bio = ""
+    avatar = ""   # path or URL; shown in the header and the home h-card
+    email = ""    # set to show the "Email" reply pill under posts
+
+  # Profiles linked from the footer and the home h-card with rel="me".
+  [params.social]
+    mastodon = ""   # @user@instance; also emitted as fediverse:creator
+    bluesky = ""    # profile URL; also gets rel="atproto"
+    pixelfed = ""   # profile URL
+    github = ""     # profile URL
+
+  # Extra rel="me" links that get a <link> in <head> but no footer icon.
+  rel_me = []
+
+  # Adds the rel="me" link Bridgy Fed uses to verify a bridged site.
+  bridgy_fed = false
+
+  # IndieAuth discovery. Setting indiekey to an indiekey.id site ID fills in
+  # all three endpoints; otherwise set them one by one.
+  [params.indieauth]
+    indiekey = ""
+    metadata = ""
+    authorization_endpoint = ""
+    token_endpoint = ""
+
+  # Micropub endpoint URL, advertised with <link rel="micropub">.
+  micropub = ""
+
+  # webmention.io. domain is the one registered there; link_tags are query
+  # suffixes other sites add to links here (e.g. "ref=example.com"), asked
+  # about alongside each post's own URL.
+  [params.webmentions]
+    domain = ""
+    link_tags = []
+
+  [params.tinylytics]
+    code = ""
+    kudos = ""       # emoji; set to show the Kudos button under posts
+    events = false   # track syndication, reply and outbound clicks
+
+  [params.search]
+    pagefind = true
+
+  [params.feeds]
+    byline = true

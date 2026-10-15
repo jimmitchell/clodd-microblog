@@ -1,0 +1,17 @@
+name = "Clodd"
+license = "MIT"
+licenselink = "https://github.com/jimmitchell/hugo-theme-clodd/blob/main/LICENSE"
+description = "The Clodd CMS theme for Hugo: notes, articles and photos, with microformats2, webmentions, IndieAuth and Micropub discovery, and Byline feeds."
+homepage = "https://github.com/jimmitchell/hugo-theme-clodd"
+tags = ["blog", "indieweb", "microformats", "webmention", "dark-mode", "minimal", "responsive"]
+features = ["indieweb", "microformats2", "webmentions", "dark-mode", "json-feed", "atom", "search"]
+min_version = "0.158.0"
+
+[author]
+  name = "Jim Mitchell"
+  homepage = "https://jimmitchell.github.io"
+
+[original]
+  name = "Clodd CMS"
+  homepage = "https://github.com/jimmitchell/clodd-cms"
+  repo = "https://github.com/jimmitchell/clodd-cms"

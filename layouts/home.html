@@ -1,0 +1,7 @@
+{{ define "main" }}
+<ul>
+  {{- range (.Paginate (where site.RegularPages "Section" "in" site.Params.mainSections)).Pages }}
+  <li><a href="{{ .RelPermalink }}">{{ .Title | default (.Date.Format "January 2, 2006") }}</a></li>
+  {{- end }}
+</ul>
+{{ end }}
