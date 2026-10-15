@@ -1,0 +1,158 @@
+/* ── Clodd for Hugo — pages Clodd itself does not have ──────────────────────
+   The archive, the photos grid, the random-post page, and the parts of search
+   Pagefind adds. theme.css stays a verbatim copy of Clodd's stylesheet, so
+   these live here, in its tokens and idiom, and are appended to the deferred
+   half: none of it styles the top of a post. */
+
+/* ── Year filter (archive and photos) ─────────────────────────────────────── */
+/* The same field as .search-page__form's input, so the theme still has one
+   kind of control. */
+.year-filter {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    margin: 1.5rem 0 0;
+    font-size: .85rem;
+    color: var(--color-muted);
+}
+
+.year-filter select {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    padding: .3rem .6rem;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.year-filter select:focus { border-color: var(--color-link); }
+
+/* Category pills above the archive reuse .post__terms; this only spaces them. */
+.archive .post__terms { margin-top: 1rem; }
+
+/* ── Archive ──────────────────────────────────────────────────────────────── */
+/* Month headings in the uppercase micro-label of .taxonomy-archive__type, so
+   the page reads as one long index rather than a stack of articles. */
+.archive__month-title {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    color: var(--color-muted);
+    margin: 2.25rem 0 .5rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--color-rule);
+}
+
+.archive__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Date column, then the words. The date is the permalink, as on a note card. */
+.archive__item {
+    display: grid;
+    grid-template-columns: 4.25rem 1fr;
+    gap: .75rem;
+    padding: .4rem 0;
+    font-size: .95rem;
+    line-height: 1.5;
+}
+
+.archive__date {
+    color: var(--color-muted);
+    font-size: .8rem;
+    text-decoration: none;
+    white-space: nowrap;
+    padding-top: .1rem;
+}
+
+.archive__date:hover { color: var(--color-link); }
+
+.archive__title {
+    color: var(--color-text);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.archive__title:hover { color: var(--color-link); }
+
+.archive__text { color: var(--color-muted); }
+
+.archive__text a { color: inherit; text-decoration: none; }
+.archive__text a:hover { color: var(--color-link); }
+
+/* ── Photos grid ──────────────────────────────────────────────────────────── */
+/* Square crops with the 2px seams of a card gallery (.post-card__gallery), so
+   the page reads as one continuous wall per month. The crop is a thumbnail's
+   decision; the lightbox shows each picture whole. */
+.photo-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.photo-grid__link {
+    display: block;
+    aspect-ratio: 1 / 1;
+    background: var(--color-code-bg);
+    cursor: zoom-in;
+}
+
+.photo-grid__link img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity .15s;
+}
+
+.photo-grid__link:hover img { opacity: .88; }
+
+@media (max-width: 600px) {
+    .photo-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* The lightbox's way back to the post a picture came from, when it knows one
+   (the photos grid tells it). White on the lightbox's own dark scrim, like its
+   buttons, whatever the theme. */
+.gallery-lightbox__post {
+    position: fixed;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    opacity: .75;
+    font-size: .9rem;
+    text-decoration: none;
+    transition: opacity .15s;
+}
+
+.gallery-lightbox__post:hover { opacity: 1; text-decoration: underline; color: #fff; }
+
+/* ── Search results (Pagefind) ────────────────────────────────────────────── */
+/* Pagefind marks each matched word. A wash of the link colour rather than the
+   browser's yellow, so it reads in both themes. */
+#search-results mark {
+    background: color-mix(in srgb, var(--color-link) 22%, transparent);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 .1em;
+}
+
+.search-more {
+    grid-column: 1 / -1;
+    justify-self: center;
+    margin-top: .5rem;
+}
+
+/* ── Random ───────────────────────────────────────────────────────────────── */
+.random-page { color: var(--color-muted); }

@@ -2,9 +2,10 @@
 {{- if in site.MainSections .Section }}
 {{- partial "post/entry.html" . }}
 {{- else }}
-<section class="page">
+<section class="page"{{ if not .Params.search_exclude }} data-pagefind-body{{ end }}
+         data-kind="page" data-title="{{ .Title }}" data-pagefind-meta="kind[data-kind], title[data-title]">
     <header class="post__header">
-        <h1 class="post__title">{{ .Title }}</h1>
+        <h1 class="post__title" data-pagefind-ignore>{{ .Title }}</h1>
     </header>
     <div class="post__content prose">
         {{ .Content }}

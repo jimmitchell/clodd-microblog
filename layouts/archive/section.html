@@ -1,0 +1,58 @@
+{{ define "main" }}
+{{- /* Every post, newest first, grouped by month, with the categories above
+       and a year filter. Rendered for the `archive` section, so a site
+       turns it on with content/archive/_index.md. */}}
+{{- $posts := where site.RegularPages "Section" "in" site.MainSections }}
+<div class="archive h-feed">
+    <header class="taxonomy-archive__header">
+        <h1 class="taxonomy-archive__title p-name">{{ .Title | default "Archive" }}</h1>
+        {{- with $posts }}
+        <p class="taxonomy-archive__description">{{ len . | lang.FormatNumber 0 }} posts since {{ (index (last 1 .) 0).Date.Format "2006" }}.</p>
+        {{- end }}
+        {{- with .Content }}<div class="taxonomy-archive__description">{{ . }}</div>{{ end }}
+    </header>
+
+    {{- with site.Taxonomies.categories }}
+    <ul class="post__terms">
+        {{- range .Alphabetical }}
+        <li><a href="{{ .Page.RelPermalink }}" class="term term--category">{{ .Page.LinkTitle }} ({{ .Count }})</a></li>
+        {{- end }}
+    </ul>
+    {{- end }}
+
+    {{- $byYear := $posts.GroupByDate "2006" }}
+    {{- if gt (len $byYear) 1 }}
+    <div class="year-filter">
+        <label for="year-filter">Show posts from</label>
+        <select id="year-filter" data-year-filter>
+            <option value="all">All years</option>
+            {{- range $byYear }}
+            <option value="{{ .Key }}">{{ .Key }}</option>
+            {{- end }}
+        </select>
+    </div>
+    {{- end }}
+
+    {{- range $posts.GroupByDate "2006-01" }}
+    <section class="archive__month" data-year="{{ (index .Pages 0).Date.Format "2006" }}">
+        <h2 class="archive__month-title">{{ (index .Pages 0).Date | time.Format "January 2006" }}</h2>
+        <ol class="archive__list">
+            {{- range $p := .Pages }}
+            <li class="archive__item h-entry">
+                <a class="archive__date u-url" href="{{ $p.RelPermalink }}"><time class="dt-published" datetime="{{ $p.Date.UTC.Format "2006-01-02T15:04:05Z" }}">{{ $p.Date | time.Format "Jan 2" }}</time></a>
+                <span class="archive__text">
+                    {{- with $p.Title }}<a class="archive__title p-name" href="{{ $p.RelPermalink }}">{{ . }}</a>{{ end -}}
+                    {{- /* A like or repost has no words of its own, so its context
+                           line ("♥ Liked example.com/…") stands in. */ -}}
+                    {{- $text := $p.Summary | plainify | htmlUnescape | strings.TrimSpace -}}
+                    {{- if not $text }}{{ $text = partial "contexts.html" $p | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace }}{{ end -}}
+                    {{- with $text }}{{ if $p.Title }} — {{ end }}<a href="{{ $p.RelPermalink }}">{{ . | truncate 140 }}</a>{{ end -}}
+                </span>
+            </li>
+            {{- end }}
+        </ol>
+    </section>
+    {{- end }}
+</div>
+{{ partial "year-filter-script.html" . }}
+{{ end }}

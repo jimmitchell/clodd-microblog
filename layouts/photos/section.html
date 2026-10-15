@@ -1,0 +1,81 @@
+{{ define "main" }}
+{{- /* Every picture from the photo posts, as a wall of square thumbnails by
+       month. A post counts when it is a photo post or is filed in
+       params.photos_category. Pictures are read from front matter
+       `featured` and from the Markdown or <img> images in the body. The
+       thumbnails open in the site's lightbox, which links back to each
+       picture's post. Rendered for the `photos` section, so a site turns it
+       on with content/photos/_index.md. */}}
+{{- $photosCat := lower (site.Params.photos_category | default "") }}
+{{- $mdImg := `!\[[^\]]*\]\(\s*<?([^)\s>]+)` }}
+{{- $htmlImg := `<img[^>]+src=["']([^"']+)["']` }}
+{{- $entries := slice }}
+{{- range $p := where site.RegularPages "Section" "in" site.MainSections }}
+  {{- $cats := apply ($p.Params.categories | default slice) "lower" "." }}
+  {{- if or (and $photosCat (in $cats $photosCat)) (eq (partial "post-kind.html" $p) "photo") }}
+    {{- $imgs := slice }}
+    {{- with $p.Params.featured }}{{ $imgs = $imgs | append . }}{{ end }}
+    {{- range findRESubmatch $mdImg $p.RawContent }}{{ $imgs = $imgs | append (index . 1) }}{{ end }}
+    {{- range findRESubmatch $htmlImg $p.RawContent }}{{ $imgs = $imgs | append (index . 1) }}{{ end }}
+    {{- with uniq $imgs }}{{ $entries = $entries | append (dict "post" $p "imgs" .) }}{{ end }}
+  {{- end }}
+{{- end }}
+<div class="archive photos">
+    <header class="taxonomy-archive__header">
+        <h1 class="taxonomy-archive__title">{{ .Title | default "Photos" }}</h1>
+        {{- with .Content }}<div class="taxonomy-archive__description">{{ . }}</div>{{ end }}
+    </header>
+
+    {{- $years := slice }}
+    {{- range $entries }}{{ $years = $years | append (.post.Date.Format "2006") }}{{ end }}
+    {{- if gt (len (uniq $years)) 1 }}
+    <div class="year-filter">
+        <label for="year-filter">Show photos from</label>
+        <select id="year-filter" data-year-filter>
+            <option value="all">All years</option>
+            {{- range uniq $years }}
+            <option value="{{ . }}">{{ . }}</option>
+            {{- end }}
+        </select>
+    </div>
+    {{- end }}
+
+    {{- $month := "" }}
+    {{- range $entries }}
+    {{- $post := .post }}
+    {{- if ne $month ($post.Date.Format "2006-01") }}
+    {{- if $month }}
+        </ul>
+    </section>
+    {{- end }}
+    {{- $month = $post.Date.Format "2006-01" }}
+    <section class="archive__month" data-year="{{ $post.Date.Format "2006" }}">
+        <h2 class="archive__month-title">{{ $post.Date | time.Format "January 2006" }}</h2>
+        <ul class="photo-grid">
+    {{- end }}
+    {{- range .imgs }}
+            <li>
+                {{- /* A square crop for local uploads; the lightbox gets the original. */}}
+                {{- $thumb := . | relURL }}
+                {{- $u := urls.Parse . }}
+                {{- if or (not $u.Host) (eq $u.Host (urls.Parse site.BaseURL).Host) }}
+                  {{- $lookup := strings.TrimPrefix "/" $u.Path }}
+                  {{- with or ($post.Resources.Get $lookup) (resources.Get $lookup) }}
+                    {{- if in (slice "jpeg" "png" "webp" "gif") .MediaType.SubType }}
+                      {{- $thumb = (.Fill "600x600 Center webp q75").RelPermalink }}
+                    {{- end }}
+                  {{- end }}
+                {{- end }}
+                <a class="photo-grid__link" href="{{ . | relURL }}" data-gallery-item data-post="{{ $post.RelPermalink }}">
+                    <img src="{{ $thumb }}" alt="" loading="lazy" decoding="async" width="600" height="600">
+                </a>
+            </li>
+    {{- end }}
+    {{- end }}
+    {{- if $month }}
+        </ul>
+    </section>
+    {{- end }}
+</div>
+{{ partial "year-filter-script.html" . }}
+{{ end }}

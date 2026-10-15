@@ -69,13 +69,16 @@
 
         if (el.matches('[data-gallery-item]')) {
             var inner = el.querySelector('img');
-            item = { href: el.href, alt: (inner && inner.alt) || '', link: true };
+            // data-post names the post a picture belongs to, for pages that
+            // gather pictures from many posts (the photos grid); the lightbox
+            // then offers a way back to it.
+            item = { href: el.href, alt: (inner && inner.alt) || '', link: true, post: el.dataset.post || '', el: el };
         } else {
             // The anchor above already collected this one.
             if (el.closest('[data-gallery-item]')) { return; }
             // An image the author linked somewhere: that link is the intent.
             if (el.closest('a')) { return; }
-            item = { href: el.src, alt: el.alt, link: false };
+            item = { href: el.src, alt: el.alt, link: false, post: '', el: el };
         }
 
         var owner = el.closest('article') || document.body;
@@ -87,14 +90,17 @@
 
         el.addEventListener('click', function (e) {
             if (item.link) { e.preventDefault(); }
-            lbOpen(group, index);
+            // Step only through pictures a filter has left on the page (the
+            // year select on the photos grid hides whole months).
+            var shown = group.filter(function (it) { return it.el.offsetParent !== null; });
+            lbOpen(shown, Math.max(0, shown.indexOf(item)));
         });
     });
 
     var lbItems   = [];
     var lbCursor  = 0;
     var lbOverlay = null;
-    var lbImg, lbClose, lbPrev, lbNext;
+    var lbImg, lbClose, lbPrev, lbNext, lbPost;
 
     function lbBuild() {
         lbOverlay = document.createElement('div');
@@ -122,7 +128,13 @@
         lbNext.setAttribute('aria-label', 'Next image');
         lbNext.innerHTML = '&#8250;';
 
+        lbPost = document.createElement('a');
+        lbPost.className = 'gallery-lightbox__post';
+        lbPost.textContent = 'View post';
+        lbPost.hidden = true;
+
         lbOverlay.appendChild(lbImg);
+        lbOverlay.appendChild(lbPost);
         lbOverlay.appendChild(lbClose);
         lbOverlay.appendChild(lbPrev);
         lbOverlay.appendChild(lbNext);
@@ -160,6 +172,8 @@
         lbCursor  = (index + lbItems.length) % lbItems.length;
         lbImg.src = lbItems[lbCursor].href;
         lbImg.alt = lbItems[lbCursor].alt;
+        lbPost.hidden = !lbItems[lbCursor].post;
+        lbPost.href = lbItems[lbCursor].post || '#';
     }
 
     function lbHide() {

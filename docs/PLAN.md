@@ -55,7 +55,12 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
     - The external-link arrow's own-host exclusion is written from `baseURL`, not hard-coded.
     - The newsletter is a provider-neutral form posted natively (`newsletter.action`), because EmailOctopus's plain-HTML endpoint couldn't be confirmed. Clodd's `subscribe.php` relies on a server-side API key.
     - Legacy webmention targets come from `aliases`.
-- [ ] **4. Pages kept from mnml.** Archive, photos grid, random, and Pagefind in the overlay and results page.
+- [x] **4. Pages kept from mnml.** Archive, photos grid, random, and Pagefind in the overlay and results page.
+  - Their styles are in `assets/css/clodd-hugo.css`, appended to the deferred bundle, so `theme.css` stays a verbatim copy of Clodd's.
+  - Search uses Pagefind's JS API rather than its UI, and draws Clodd's cards. Each card's kind, title and date come from data- attributes. A note's title is its date, or Pagefind would fall back to the site name and every note would match it.
+  - The shared lightbox in `theme.js` gained a "View post" link for pictures that name their post (`data-post`), and steps only through pictures a filter has left visible.
+  - Archive rows for a like or repost show the context line, since there are no words to show.
+  - Tested against the real site: 693 pages indexed, 691 archive rows, 107 photos; the year filter, lightbox and result paging all work.
 - [ ] **5. Feeds and OG cards.**
   - RSS at `/feed.xml`, `/index.xml` and `/feed.rss`; Atom at `/atom.xml`; JSON Feed.
   - Byline in all of them, notes without titles, per-term feeds.

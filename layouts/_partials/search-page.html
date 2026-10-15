@@ -1,0 +1,31 @@
+{{- /* Clodd's search page, with Pagefind's index behind it. Arguments (a
+       dict): page, heading (false when the page already has a title, as when
+       this comes from the search shortcode).
+
+       The form submits to this same page with ?q=, which is also where the
+       header's search overlay sends a query. search.js loads the Pagefind
+       bundle, which the site's build creates (pagefind --site public), and
+       draws the results as Clodd's post cards. */ -}}
+<div class="search-page" data-pagefind-ignore="all">
+    {{- if ne .heading false }}
+    <h1 class="search-page__title">{{ .page.Title | default "Search" }}</h1>
+    {{- end }}
+    <form class="search-page__form" action="{{ .page.RelPermalink }}" method="get" role="search">
+        <input type="search" name="q" id="search-page-q"
+               placeholder="Search posts…"
+               autocomplete="off" aria-label="Search posts"
+               autofocus value="">
+        <button type="submit" aria-label="Search">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                 stroke-linejoin="round" aria-hidden="true" focusable="false">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </button>
+    </form>
+
+    <div id="search-results" class="post-list" aria-live="polite"
+         data-bundle="{{ "pagefind/" | relURL }}"></div>
+</div>
+{{- $js := resources.Get "js/search.js" | minify | fingerprint }}
+<script src="{{ $js.RelPermalink }}" defer></script>

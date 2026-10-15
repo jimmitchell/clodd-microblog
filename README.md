@@ -143,7 +143,40 @@ Two empty partials let a site add markup without overriding a theme template: `l
 
 ### Search
 
-The header shows a search button, and the search overlay, when the site has a page at `/search` (for example `content/search.md`).
+Search is [Pagefind]: the index is built from the finished site, so it searches whole posts and ranks the results. Results are drawn as the theme's own post cards.
+
+1. Add a search page:
+
+   ```yaml
+   # content/search.md
+   ---
+   title: Search
+   layout: search
+   search_exclude: true
+   ---
+   ```
+
+   A page whose body is the `{{</* search */>}}` shortcode works too.
+
+2. Index the site after Hugo builds it:
+
+   ```sh
+   hugo && npx pagefind --site public
+   ```
+
+The header's search button and overlay appear once the site has a page at `/search`. Pagefind indexes posts and pages. Set `search_exclude: true` on anything that should stay out. Under a plain `hugo server` there's no index, and the search page says so.
+
+### Archive, photos and random
+
+Each one is switched on by a content file:
+
+| Page | File | What it shows |
+|---|---|---|
+| Archive | `content/archive/_index.md` | Every post by month, with category pills and a year filter |
+| Photos | `content/photos/_index.md` | Square thumbnails of every picture in photo posts and in `photos_category`, by month, opening in the lightbox with a link back to each post |
+| Random | `content/random.md` with `layout: random` | Sends the visitor to a random post |
+
+Add them to `menus.main` to put them in the header.
 
 ## Post kinds
 

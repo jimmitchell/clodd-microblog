@@ -1,0 +1,14 @@
+{{- /* Shows only the months of the year chosen in [data-year-filter]. Each
+       month is an element carrying data-year; nothing else is touched. */ -}}
+<script>
+(function () {
+    var select = document.querySelector('[data-year-filter]');
+    if (!select) return;
+    select.addEventListener('change', function () {
+        var year = select.value;
+        document.querySelectorAll('[data-year]').forEach(function (el) {
+            el.hidden = year !== 'all' && el.dataset.year !== year;
+        });
+    });
+}());
+</script>

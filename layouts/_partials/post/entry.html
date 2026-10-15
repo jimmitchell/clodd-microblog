@@ -6,17 +6,31 @@
 {{- $author := site.Params.author | default dict -}}
 {{- $wm := site.Params.webmentions | default dict -}}
 {{- $contexts := partial "contexts.html" . -}}
-<article class="post{{ if $isNote }} post--note{{ end }}{{ if eq $kind "photo" }} post--photo{{ end }} h-entry">
+{{- /* Pagefind indexes the article only, with its kind, title and date as
+       metadata for the result cards, each read from a data- attribute
+       (Pagefind cannot mix a literal value with attribute-sourced ones in one
+       data-pagefind-meta, and a written-out date has a comma in it).
+
+       A note's title is its date: left alone, Pagefind falls back to the
+       page's <title>, which for a note is the site name, and every note
+       would match a search for it. The visible title, date, pills, form and
+       byline are kept out of the text so no excerpt starts with them.
+       search_exclude: true keeps a post out of search. */}}
+<article class="post{{ if $isNote }} post--note{{ end }}{{ if eq $kind "photo" }} post--photo{{ end }} h-entry"
+         {{- if not .Params.search_exclude }} data-pagefind-body{{ end }}
+         {{- $date := .Date | time.Format (site.Params.date_format | default "January 2, 2006") }}
+         data-kind="{{ $kind }}" data-date="{{ $date }}" data-title="{{ .Title | default $date }}"
+         data-pagefind-meta="kind[data-kind], date[data-date], title[data-title]">
     <header class="post__header">
         {{- if not $isNote }}
-        <h1 class="post__title p-name">{{ .Title }}</h1>
-        <a class="post__author p-author h-card" href="{{ site.Home.Permalink }}" rel="author">{{ $author.name | default site.Title }}</a>
+        <h1 class="post__title p-name" data-pagefind-ignore>{{ .Title }}</h1>
+        <a class="post__author p-author h-card" data-pagefind-ignore href="{{ site.Home.Permalink }}" rel="author">{{ $author.name | default site.Title }}</a>
         {{- end }}
-        <time class="post__date dt-published" datetime="{{ .Date.UTC.Format "2006-01-02T15:04:05Z" }}">
+        <time class="post__date dt-published" data-pagefind-ignore datetime="{{ .Date.UTC.Format "2006-01-02T15:04:05Z" }}">
             <a class="u-url" href="{{ $canonical }}">{{ .Date | time.Format (site.Params.date_format | default "January 2, 2006") }}</a>
         </time>
         {{- if and (not $isNote) (ne site.Params.show_reading_time false) }}
-        <span class="post__reading-time">{{ partial "reading-time.html" . }} min read</span>
+        <span class="post__reading-time" data-pagefind-ignore>{{ partial "reading-time.html" . }} min read</span>
         {{- end }}
         {{- if ne (.Lastmod.Format "2006-01-02T15:04") (.Date.Format "2006-01-02T15:04") }}
         <time class="dt-updated" datetime="{{ .Lastmod.UTC.Format "2006-01-02T15:04:05Z" }}" hidden></time>
@@ -56,7 +70,7 @@
            still lines up with the article. */}}
     <input type="checkbox" id="wm-submit-toggle" class="wm-submit__checkbox">
     {{- end }}
-    <footer class="post__syndication">
+    <footer class="post__syndication" data-pagefind-ignore="all">
         {{- with $email }}
         {{- $subject := cond $isNote (printf "Re: note from %s" ($.Date.Format "2006-01-02")) (printf "Re: %s" $.Title) }}
         {{- /* %20 rather than urlquery's +, which some mail clients show as a
@@ -83,7 +97,7 @@
            The target is the same canonical URL #webmentions asks about below;
            if the two ever drift, a mention is accepted against a URL this page
            never queries and is invisible forever. */}}
-    <form class="wm-submit__form" method="post" action="https://webmention.io/{{ . }}/webmention">
+    <form class="wm-submit__form" data-pagefind-ignore="all" method="post" action="https://webmention.io/{{ . }}/webmention">
         <input type="hidden" name="target" value="{{ $canonical }}">
         <label class="wm-submit__label" for="wm-source">Written a response on your own site? Paste its URL and it&rsquo;ll show up here.</label>
         <div class="wm-submit__row">

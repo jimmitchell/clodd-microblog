@@ -1,0 +1,3 @@
+{{- /* The search page inside an ordinary page's body, for sites whose
+       content/search.md uses {{< search >}} rather than `layout: search`. */ -}}
+{{- partial "search-page.html" (dict "page" .Page "heading" false) -}}

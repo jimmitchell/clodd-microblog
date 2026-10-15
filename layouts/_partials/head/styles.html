@@ -14,7 +14,10 @@
        Clodd's stylesheet spells out as its own host. */ -}}
 {{- $critical = replace $critical `[href*="//jimmitchell.org"]` (printf `[href*="//%s"]` (urls.Parse site.BaseURL).Host) -}}
 {{- $critical = resources.FromString "css/theme.critical.css" $critical | minify -}}
-{{- $deferred := resources.FromString "css/theme.deferred.css" (index $parts 1) | minify | fingerprint -}}
+{{- /* clodd-hugo.css styles the pages Clodd does not have; it joins the
+       deferred half, after Clodd's own rules. */ -}}
+{{- $extras := (resources.Get "css/clodd-hugo.css").Content -}}
+{{- $deferred := resources.FromString "css/theme.deferred.css" (printf "%s\n%s" (index $parts 1) $extras) | minify | fingerprint -}}
 <style>{{ $critical.Content | safeCSS }}</style>
 <link rel="preload" href="{{ $deferred.RelPermalink }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="{{ $deferred.RelPermalink }}"></noscript>

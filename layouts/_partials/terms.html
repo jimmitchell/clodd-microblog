@@ -8,7 +8,7 @@
   {{- end -}}
 {{- end -}}
 {{- with $terms }}
-<ul class="post__terms">
+<ul class="post__terms" data-pagefind-ignore="all">
   {{- range . }}
     <li><a href="{{ .url }}" class="term term--{{ .type }} p-category">{{ .label }}</a></li>
   {{- end }}
