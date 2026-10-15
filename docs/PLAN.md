@@ -38,20 +38,30 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
   - Pingback uses webmention.io's per-domain endpoint (`/<domain>/xmlrpc`). Clodd links the bare `/xmlrpc`.
   - Feed links: one per feed type, the site's first, plus the term's own on category and tag pages.
   - webmention/pingback, IndieAuth/Micropub, feed alternates (including per-term feeds), sitemap, favicon. (Custom CSS landed in phase 1.)
-- [ ] **3. Content templates.**
+- [x] **3. Content templates.**
   - Home: the h-card intro and an h-feed of cards in three variants.
   - Single post:
     - Full h-entry, the featured image, context lines and photos.
     - Syndication, Email and Kudos pills; the webmention form.
     - Webmentions display (`webmentions.js`), the newsletter form, Newer/Older links.
   - Pages, taxonomy archives, and the 404 page with its Wayback Machine lookup.
+  - Checked with mf2py: every post type is discovered (article, note, photo, reply, like, repost, bookmark, rsvp), and the home page has a representative h-card. Webmentions render the same as on the live site.
+  - Where it differs from Clodd:
+    - Photo posts keep their pictures in the body (where Micropub and Micro.blog put them), so `u-photo` is added to the body's images.
+    - The Email pill isn't `u-syndication`: a `mailto:` isn't a copy of the post.
+    - The home h-card gains an invisible `u-photo`.
+    - `dt-updated` replaces Clodd's `u-update`.
+    - Card dates default to the live site's "October 14, 2026", not the template's weekday form.
+    - The external-link arrow's own-host exclusion is written from `baseURL`, not hard-coded.
+    - The newsletter is a provider-neutral form posted natively (`newsletter.action`), because EmailOctopus's plain-HTML endpoint couldn't be confirmed. Clodd's `subscribe.php` relies on a server-side API key.
+    - Legacy webmention targets come from `aliases`.
 - [ ] **4. Pages kept from mnml.** Archive, photos grid, random, and Pagefind in the overlay and results page.
 - [ ] **5. Feeds and OG cards.**
   - RSS at `/feed.xml`, `/index.xml` and `/feed.rss`; Atom at `/atom.xml`; JSON Feed.
   - Byline in all of them, notes without titles, per-term feeds.
   - OG cards with `images.Text` and the static DM Sans font from `clodd-cms/fonts/og/`.
 - [ ] **6. Markup.**
-  - Image render hook: lazy loading, dimensions, lightbox.
+  - Image render hook: lazy loading, dimensions, lightbox. Use `_partials/image.html`. On the lead card, load the first body image eagerly (Clodd's `promoteFirstImage`). Must not call `post-kind.html`, which renders `.Content` and would recurse.
   - Code blocks: Chroma's `xcode-dark` style and the copy button.
   - Shortcodes: `gallery` (Mondrian layouts for 1–7 images, larger sets split into blocks), `youtube`, `vimeo`, `gist`, `mastodon`, `instagram`, `tweet`, `linkedin`.
 - [ ] **7. Site switchover** (on a branch of the site repo).

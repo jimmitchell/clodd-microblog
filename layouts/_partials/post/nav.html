@@ -1,0 +1,21 @@
+{{- /* Newer and Older, across every post in the main sections. A note has
+       no title to link with, so its date and time stand in. */ -}}
+{{- $posts := where site.RegularPages "Section" "in" site.MainSections -}}
+{{- $newer := $posts.Next . -}}
+{{- $older := $posts.Prev . -}}
+{{- if or $newer $older }}
+<nav class="post-nav" aria-label="Post navigation">
+    <div class="post-nav__prev">
+        {{- with $newer }}
+        <span class="post-nav__label">Newer</span>
+        <a class="post-nav__link" rel="prev" href="{{ .RelPermalink }}">{{ partial "post/nav-label.html" . }}</a>
+        {{- end }}
+    </div>
+    <div class="post-nav__next">
+        {{- with $older }}
+        <span class="post-nav__label">Older</span>
+        <a class="post-nav__link" rel="next" href="{{ .RelPermalink }}">{{ partial "post/nav-label.html" . }}</a>
+        {{- end }}
+    </div>
+</nav>
+{{- end -}}

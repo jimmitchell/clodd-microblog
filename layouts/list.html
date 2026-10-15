@@ -1,11 +1,22 @@
 {{ define "main" }}
-{{- /* Phase 1 placeholder. Phase 3 replaces it with taxonomy archives. */}}
-<div class="post__content prose">
-<h1>{{ .Title }}</h1>
-<ul>
-  {{- range (partial "pager.html" .).Pages }}
-  <li><a href="{{ .RelPermalink }}">{{ .Title | default (.Date.Format "January 2, 2006") }}</a></li>
-  {{- end }}
-</ul>
+{{- /* Any other list page, such as a section index: the same h-feed of
+       cards as the archives. */}}
+{{- $pager := partial "pager.html" . }}
+<div class="taxonomy-archive">
+    <header class="taxonomy-archive__header">
+        <h1 class="taxonomy-archive__title">{{ .Title }}</h1>
+        {{- with .Content }}
+        <div class="taxonomy-archive__description">{{ . }}</div>
+        {{- end }}
+    </header>
+    <div class="post-list h-feed">
+        <data class="p-name" value="{{ .Title }}"></data>
+        {{- range $pager.Pages }}
+        {{ partial "post-card.html" (dict "page" .) }}
+        {{- else }}
+        <p class="post-list__empty">No published posts yet.</p>
+        {{- end }}
+    </div>
+    {{- partial "pagination.html" $pager }}
 </div>
 {{ end }}

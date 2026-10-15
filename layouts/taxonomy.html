@@ -1,0 +1,14 @@
+{{ define "main" }}
+{{- /* Every category (or tag), most-used first. Clodd has no page here;
+       this one borrows the archive header so it looks like the rest. */}}
+<div class="taxonomy-archive">
+    <header class="taxonomy-archive__header">
+        <h1 class="taxonomy-archive__title">{{ .Title }}</h1>
+    </header>
+    <ul class="post__terms">
+        {{- range .Data.Terms.ByCount }}
+        <li><a href="{{ .Page.RelPermalink }}" class="term term--{{ cond (eq $.Data.Plural "tags") "tag" "category" }}">{{ .Page.LinkTitle }} ({{ .Count }})</a></li>
+        {{- end }}
+    </ul>
+</div>
+{{ end }}

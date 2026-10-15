@@ -1,0 +1,127 @@
+{{- /* A post's page: the h-entry, then what a reader who got to the end
+       might do next — subscribe, read the responses, move along. */ -}}
+{{- $kind := partial "post-kind.html" . -}}
+{{- $isNote := ne $kind "article" -}}
+{{- $canonical := .Permalink -}}
+{{- $author := site.Params.author | default dict -}}
+{{- $wm := site.Params.webmentions | default dict -}}
+{{- $contexts := partial "contexts.html" . -}}
+<article class="post{{ if $isNote }} post--note{{ end }}{{ if eq $kind "photo" }} post--photo{{ end }} h-entry">
+    <header class="post__header">
+        {{- if not $isNote }}
+        <h1 class="post__title p-name">{{ .Title }}</h1>
+        <a class="post__author p-author h-card" href="{{ site.Home.Permalink }}" rel="author">{{ $author.name | default site.Title }}</a>
+        {{- end }}
+        <time class="post__date dt-published" datetime="{{ .Date.UTC.Format "2006-01-02T15:04:05Z" }}">
+            <a class="u-url" href="{{ $canonical }}">{{ .Date | time.Format (site.Params.date_format | default "January 2, 2006") }}</a>
+        </time>
+        {{- if and (not $isNote) (ne site.Params.show_reading_time false) }}
+        <span class="post__reading-time">{{ partial "reading-time.html" . }} min read</span>
+        {{- end }}
+        {{- if ne (.Lastmod.Format "2006-01-02T15:04") (.Date.Format "2006-01-02T15:04") }}
+        <time class="dt-updated" datetime="{{ .Lastmod.UTC.Format "2006-01-02T15:04:05Z" }}" hidden></time>
+        {{- end }}
+        {{- partial "terms.html" . }}
+    </header>
+
+    {{- /* Only a *stored* featured image gets a slot of its own. One derived
+           from the body is already about to be drawn as part of it, and
+           reading it here would draw the picture twice. */}}
+    {{- with partial "featured.html" . }}{{ if .stored }}
+    <figure class="post__featured">
+        <a href="{{ .url }}" class="post__featured-link" data-gallery-item>
+            {{ partial "image.html" (dict "page" $ "src" .url "alt" .alt "class" "u-featured" "sizes" "(max-width: 44rem) 100vw, 44rem" "eager" true) }}
+        </a>
+    </figure>
+    {{- end }}{{ end }}
+
+    {{- with $contexts }}
+    <div class="post__contexts">{{ . }}</div>
+    {{- end }}
+
+    <div class="post__content prose e-content">
+        {{ partial "photo-content.html" (dict "page" . "kind" $kind) | safeHTML }}
+    </div>
+
+    {{- $email := $author.email | default "" }}
+    {{- $tiny := site.Params.tinylytics | default dict }}
+    {{- $kudos := and $tiny.code $tiny.kudos }}
+    {{- $syndication := partial "syndication.html" . }}
+    {{- if or $email $syndication $wm.domain $kudos }}
+    {{- if $wm.domain }}
+    {{- /* A checkbox and a <label> pill rather than <details>/<summary>: a
+           <details> is one box, so its summary could sit in the pill row or its
+           content could span the measure, never both. Split into a checkbox
+           before the row and a form after it, the pill stays put and the form
+           still lines up with the article. */}}
+    <input type="checkbox" id="wm-submit-toggle" class="wm-submit__checkbox">
+    {{- end }}
+    <footer class="post__syndication">
+        {{- with $email }}
+        {{- $subject := cond $isNote (printf "Re: note from %s" ($.Date.Format "2006-01-02")) (printf "Re: %s" $.Title) }}
+        {{- /* %20 rather than urlquery's +, which some mail clients show as a
+               literal plus. Built whole and marked safe, or the escaper would
+               encode the % a second time. No u-syndication, unlike Clodd: a
+               mailto: is not a copy of the post, and parsers would list it as
+               one. */}}
+        <a href="{{ printf "mailto:%s?subject=%s" . (replace (urlquery $subject) "+" "%20") | safeURL }}" data-tinylytics-event="reply.email">Email</a>
+        {{- end }}
+        {{- range $syndication }}
+        <a href="{{ .url }}" class="u-syndication" target="_blank" rel="noopener noreferrer"
+           data-tinylytics-event="syndication.open" data-tinylytics-event-value="{{ .key }}">{{ .label }}</a>
+        {{- end }}
+        {{- if $wm.domain }}
+        <label class="wm-submit__toggle" for="wm-submit-toggle" data-tinylytics-event="webmention.open">Webmention</label>
+        {{- end }}
+        {{- if $kudos }}
+        <button class="tinylytics_kudos" data-path="{{ .RelPermalink }}"></button>
+        {{- end }}
+    </footer>
+    {{- with $wm.domain }}
+    {{- /* A real form posting cross-origin, not a JS-only widget: with JS off
+           the native POST still lands on webmention.io's own confirmation page.
+           The target is the same canonical URL #webmentions asks about below;
+           if the two ever drift, a mention is accepted against a URL this page
+           never queries and is invisible forever. */}}
+    <form class="wm-submit__form" method="post" action="https://webmention.io/{{ . }}/webmention">
+        <input type="hidden" name="target" value="{{ $canonical }}">
+        <label class="wm-submit__label" for="wm-source">Written a response on your own site? Paste its URL and it&rsquo;ll show up here.</label>
+        <div class="wm-submit__row">
+            <input class="wm-submit__input" type="url" name="source" id="wm-source"
+                   required placeholder="https://" autocomplete="url" inputmode="url" spellcheck="false">
+            <button class="wm-submit__send" type="submit">Send</button>
+        </div>
+        <p class="wm-submit__status" role="status" aria-live="polite" hidden></p>
+    </form>
+    {{- end }}
+    {{- end }}
+</article>
+
+{{- /* Articles only: that is what a newsletter sends, so a signup under a
+       note would promise something the email never delivers. */}}
+{{- if eq $kind "article" }}
+{{- partial "newsletter.html" . }}
+{{- end }}
+
+{{- with $wm.domain }}
+{{- /* data-link-tags: query suffixes other sites add to links pointing here,
+       asked about alongside the canonical, since webmention.io stores a target
+       verbatim. data-legacy-urls: the same problem in time — every address
+       this post used to have (its aliases). Neither is ever the submit target
+       above, which has to be the live address. */}}
+{{- $tags := slice }}
+{{- range $wm.link_tags | default slice }}
+  {{- $t := strings.TrimLeft "?&" (strings.TrimSpace .) }}
+  {{- if and (findRE `^[A-Za-z0-9._~%+-]+=[A-Za-z0-9._~%+-]*$` $t 1) (not (in $tags $t)) }}{{ $tags = $tags | append $t }}{{ end }}
+{{- end }}
+{{- $legacy := slice }}
+{{- range $.Aliases }}{{ $legacy = $legacy | append (absURL .) }}{{ end }}
+<section class="webmentions" id="webmentions" data-url="{{ $canonical }}"
+         data-link-tags="{{ delimit $tags " " }}"
+         data-legacy-urls="{{ delimit $legacy " " }}">
+    <h2 class="webmentions__title">Webmentions</h2>
+    <div class="webmentions__body"></div>
+</section>
+{{- end }}
+
+{{- partial "post/nav.html" . }}

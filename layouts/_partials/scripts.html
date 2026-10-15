@@ -1,2 +1,8 @@
 {{- $js := resources.Get "js/theme.js" | minify | fingerprint -}}
 <script src="{{ $js.RelPermalink }}" defer></script>
+{{- /* Post pages only, and only when webmentions are on: the script's first
+       act is to look for #webmentions, which only a post renders. */}}
+{{- if and .IsPage (in site.MainSections .Section) (site.Params.webmentions | default dict).domain }}
+{{- $wm := resources.Get "js/webmentions.js" | minify | fingerprint }}
+<script src="{{ $wm.RelPermalink }}" defer></script>
+{{- end }}

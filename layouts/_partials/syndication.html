@@ -1,0 +1,21 @@
+{{- /* Front matter `syndication` (a URL or a list), each resolved to a pill
+       label by its shape: a Mastodon status (/@user/<id>), a Bluesky post, a
+       Pixelfed post (/p/<user>/<id>), or else its hostname. Returns a list of
+       dict url, label, key. */ -}}
+{{- $out := slice -}}
+{{- $urls := .Params.syndication | default slice -}}
+{{- if reflect.IsSlice $urls | not }}{{ $urls = slice $urls }}{{ end -}}
+{{- range $urls -}}
+  {{- $url := strings.TrimSpace (string .) -}}
+  {{- if findRE `^https?://` $url 1 -}}
+    {{- $u := urls.Parse $url -}}
+    {{- $host := strings.TrimPrefix "www." $u.Host -}}
+    {{- $label := $host -}}
+    {{- if in (slice "bsky.app" "staging.bsky.app") $host }}{{ $label = "Bluesky" -}}
+    {{- else if findRE `^/@[^/]+/\d+/?$` $u.Path 1 }}{{ $label = "Mastodon" -}}
+    {{- else if findRE `^/p/[^/]+/\d+/?$` $u.Path 1 }}{{ $label = "Pixelfed" -}}
+    {{- end -}}
+    {{- $out = $out | append (dict "url" $url "label" $label "key" (lower $label)) -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}

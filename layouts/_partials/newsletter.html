@@ -1,0 +1,22 @@
+{{- /* Newsletter signup under articles, in Clodd's styling, posting
+       natively to whatever list provider params.newsletter.action names.
+       Off unless that is set. See "Newsletter" in README.md. */ -}}
+{{- $n := site.Params.newsletter | default dict -}}
+{{- with $n.action }}
+{{- $feed := site.Home.OutputFormats.Get "rss" }}
+<form class="subscribe" id="subscribe" method="post" action="{{ . }}">
+    {{- range $name, $value := $n.hidden | default dict }}
+    <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+    {{- end }}
+    {{- /* A <p> named by aria-labelledby rather than a <label>: it holds a
+           link, and a click on a link inside a label also moves focus to the
+           field, which reads as the page jumping. */}}
+    <p class="subscribe__label" id="subscribe-label">{{ with $n.label }}{{ . | markdownify }}{{ else }}Subscribe to get new articles delivered to your inbox{{ with $feed }} (or grab the <a href="{{ .RelPermalink }}">RSS feed</a>){{ end }}{{ end }}</p>
+    <div class="subscribe__row">
+        <input class="subscribe__input" type="email" name="{{ $n.email_field | default "email" }}" id="subscribe-email"
+               aria-labelledby="subscribe-label"
+               required placeholder="Enter your email…" autocomplete="email" spellcheck="false">
+        <button class="subscribe__send" type="submit" data-tinylytics-event="newsletter.subscribe">Subscribe</button>
+    </div>
+</form>
+{{- end -}}

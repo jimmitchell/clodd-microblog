@@ -1,0 +1,3 @@
+{{- /* Minutes to read at 200 words a minute, rounded up, never less than
+       one — Clodd's arithmetic, so the two agree on every post. */ -}}
+{{- return (math.Max 1 (math.Ceil (div (float .WordCount) 200)) | int) -}}

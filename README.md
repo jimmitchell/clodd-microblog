@@ -57,10 +57,10 @@ Everything goes under `params`, and all of it is optional. The defaults are in [
 params:
   description: Personal site and writing of Sam Example.
   date_format: January 2, 2006               # post pages (Go layout)
-  card_date_format: Monday, January 2, 2006  # home and archive cards
+  card_date_format: January 2, 2006           # home and archive cards
   show_reading_time: true
   photos_category: Photos   # see "Post kinds"
-  home_intro: ""            # after "Hey, I'm <name>." Falls back to author.bio
+  home_intro: ""            # after "Hey, I'm <name>."; falls back to author.bio
   footer_text: ""           # Markdown; empty shows "© <year> <site title>"
   custom_css: ""            # injected after the theme's styles
   favicon: ""               # path or URL; default is the theme's favicon.svg
@@ -97,6 +97,12 @@ params:
     kudos: ""                # an emoji; shows the Kudos button
     events: false
 
+  newsletter:               # see "Newsletter" below
+    action: ""
+    email_field: email
+    label: ""
+    hidden: {}
+
   search:
     pagefind: true
   feeds:
@@ -104,6 +110,21 @@ params:
 ```
 
 `webmentions.link_tags` is for sites that add a query string to their outbound links, such as Ghost's `?ref=`. webmention.io stores the target URL exactly as it was sent, so a mention of `/post/?ref=example.com` would otherwise never show on `/post/`. Each tag is asked about alongside the post's own URL.
+
+### Newsletter
+
+Articles end with a signup form, in Clodd's styling, when `newsletter.action` is set. It's an ordinary HTML form, and the browser posts it straight to your list provider, so it works without JavaScript and no secret key has to live on the site. Copy the form's `action` URL and field names from the plain-HTML embed code your provider gives you:
+
+```yaml
+params:
+  newsletter:
+    action: https://buttondown.com/api/emails/embed-subscribe/sam
+    email_field: email
+    hidden:
+      embed: "1"
+```
+
+After submitting, the reader lands on the provider's own confirmation page.
 
 ### Menus
 
@@ -162,6 +183,7 @@ repost_of: [https://…]
 bookmark_of: [https://…]
 rsvp: "yes"                # yes | no | maybe | interested; goes with in_reply_to
 
+aliases: []               # old URLs; webmentions sent to them still show
 syndication:               # copies elsewhere, shown as pills, u-syndication
   - https://mastodon.example/@sam/115000000000000001
   - https://bsky.app/profile/sam.example.org/post/3kexample

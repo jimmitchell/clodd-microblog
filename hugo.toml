@@ -9,9 +9,9 @@
 [params]
   description = ""
 
-  # Dates use Go layouts. The post page and the cards differ, as in Clodd.
+  # Dates use Go layouts: the post page, and the home and archive cards.
   date_format = "January 2, 2006"
-  card_date_format = "Monday, January 2, 2006"
+  card_date_format = "January 2, 2006"
   show_reading_time = true
 
   # A titleless post in this category, or one that is mostly pictures, is
@@ -19,7 +19,7 @@
   photos_category = "Photos"
 
   # Text after "Hey, I'm <name>." on the home page h-card. Falls back to
-  # author.bio, then to the body of content/_index.md.
+  # author.bio.
   home_intro = ""
 
   # Footer text, Markdown allowed. Empty shows "© <year> <site title>".
@@ -76,6 +76,14 @@
     code = ""
     kudos = ""       # emoji; set to show the Kudos button under posts
     events = false   # track syndication, reply and outbound clicks
+
+  # Newsletter signup under articles, posted natively to your list
+  # provider. Off unless action is set. See "Newsletter" in README.md.
+  [params.newsletter]
+    action = ""          # the provider's form URL
+    email_field = "email"
+    label = ""           # Markdown; empty uses Clodd's wording
+    [params.newsletter.hidden]   # extra fields the provider expects
 
   [params.search]
     pagefind = true

@@ -1,0 +1,26 @@
+{{- /* The site's representative h-card, above the feed on page one. It tells
+       a first-time visitor who they're reading, and it is the h-card that
+       IndieAuth clients, webmention senders and mf2 parsers look for: u-url
+       and u-uid both resolve to the home page, which is what makes it
+       representative. Without it the h-entry cards below have no author.
+
+       Copy comes from params.home_intro, else params.author.bio. Renders
+       nothing when there is no author name to introduce. */ -}}
+{{- $author := site.Params.author | default dict -}}
+{{- with $author.name }}
+{{- $name := . }}
+{{- $intro := site.Params.home_intro | default $author.bio | default "" }}
+{{- $social := partial "social-links.html" (dict "names" true) | strings.TrimSpace }}
+<div class="home-intro h-card">
+    <p class="home-intro__text">
+        Hey, I&rsquo;m <a class="p-name u-url u-uid" rel="me author" href="{{ site.Home.Permalink }}">{{ $name }}</a>.
+        {{- with $intro }} <span class="p-note">{{ . }}</span>{{ end }}
+    </p>
+    {{- with (partialCached "avatar.html" . "avatar").url }}
+    <data class="u-photo" value="{{ . }}"></data>
+    {{- end }}
+    {{- with $social }}
+    <div class="home-intro__social">{{ . | safeHTML }}</div>
+    {{- end }}
+</div>
+{{- end -}}

@@ -1,0 +1,16 @@
+{{- /* Category and tag pills: categories first, then tags, each in
+       alphabetical order. Renders nothing when the post has neither. */ -}}
+{{- $terms := slice -}}
+{{- range $tax := slice "categories" "tags" -}}
+  {{- $type := cond (eq $tax "categories") "category" "tag" -}}
+  {{- range sort ($.GetTerms $tax) "LinkTitle" -}}
+    {{- $terms = $terms | append (dict "url" .RelPermalink "label" .LinkTitle "type" $type) -}}
+  {{- end -}}
+{{- end -}}
+{{- with $terms }}
+<ul class="post__terms">
+  {{- range . }}
+    <li><a href="{{ .url }}" class="term term--{{ .type }} p-category">{{ .label }}</a></li>
+  {{- end }}
+</ul>
+{{- end -}}

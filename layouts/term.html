@@ -1,0 +1,22 @@
+{{ define "main" }}
+{{- $pager := partial "pager.html" . }}
+{{- $label := .Data.Singular | humanize }}
+<div class="taxonomy-archive">
+    <header class="taxonomy-archive__header">
+        <p class="taxonomy-archive__type">{{ $label }}</p>
+        <h1 class="taxonomy-archive__title">{{ .Title }}</h1>
+        {{- with .Description }}
+        <p class="taxonomy-archive__description">{{ . }}</p>
+        {{- end }}
+    </header>
+    <div class="post-list h-feed">
+        <data class="p-name" value="{{ $label }}: {{ .Title }}"></data>
+        {{- range $pager.Pages }}
+        {{ partial "post-card.html" (dict "page" .) }}
+        {{- else }}
+        <p class="post-list__empty">No published posts yet.</p>
+        {{- end }}
+    </div>
+    {{- partial "pagination.html" $pager }}
+</div>
+{{ end }}

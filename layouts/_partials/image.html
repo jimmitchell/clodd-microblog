@@ -1,0 +1,54 @@
+{{- /* One image, as Clodd's ImageTag draws it. Arguments (a dict):
+         page   — the page the image belongs to (for page resources)
+         src    — URL as written, e.g. /media/2026/10/a.jpg
+         alt    — alt text
+         class  — classes for the <img>
+         sizes  — the sizes hint for the WebP <source>
+         eager  — true for the Largest Contentful Paint image: loads eagerly,
+                  at high priority, and decodes synchronously
+
+       For a JPEG or PNG Hugo can read (a page resource, or under assets/,
+       which a site's static/media is mounted into) it emits a <picture>: a
+       WebP <source> with an 800px and a full-size candidate, and an <img>
+       carrying the original plus width and height, so the box is reserved
+       before the bytes arrive. Anything else is a plain lazy <img>. */ -}}
+{{- $src := .src -}}
+{{- $attrs := dict "src" $src "alt" (.alt | default "") -}}
+{{- with .class }}{{ $attrs = merge $attrs (dict "class" .) }}{{ end -}}
+{{- if .eager -}}
+  {{- $attrs = merge $attrs (dict "loading" "eager" "fetchpriority" "high" "decoding" "sync") -}}
+{{- else -}}
+  {{- $attrs = merge $attrs (dict "loading" "lazy" "decoding" "async") -}}
+{{- end -}}
+{{- $res := false -}}
+{{- if not (or (strings.HasPrefix $src "data:") (findRE `^[a-z]+://` $src 1)) -}}
+  {{- $lookup := strings.TrimPrefix "/" $src -}}
+  {{- with .page }}{{ $res = .Resources.Get $lookup }}{{ end -}}
+  {{- $res = or $res (resources.Get $lookup) -}}
+{{- end -}}
+{{- $webp := slice -}}
+{{- if and $res (eq $res.ResourceType "image") (in (slice "jpeg" "png") $res.MediaType.SubType) -}}
+  {{- $attrs = merge $attrs (dict "src" $res.RelPermalink "width" $res.Width "height" $res.Height) -}}
+  {{- if gt $res.Width 800 -}}
+    {{- $webp = $webp | append (printf "%s 800w" ($res.Resize "800x webp").RelPermalink) -}}
+  {{- end -}}
+  {{- $full := $res -}}
+  {{- if gt $res.Width 2400 }}{{ $full = $res.Resize "2400x webp" }}{{ else }}{{ $full = $res.Resize (printf "%dx webp" $res.Width) }}{{ end -}}
+  {{- $webp = $webp | append (printf "%s %dw" $full.RelPermalink $full.Width) -}}
+{{- else if and $res (eq $res.ResourceType "image") (ne $res.MediaType.SubType "svg") -}}
+  {{- $attrs = merge $attrs (dict "src" $res.RelPermalink "width" $res.Width "height" $res.Height) -}}
+{{- end -}}
+{{- $img := "<img" -}}
+{{- range $k := slice "src" "alt" "class" "width" "height" "loading" "fetchpriority" "decoding" -}}
+  {{- with index $attrs $k -}}
+    {{- $img = printf `%s %s="%s"` $img $k (. | string | htmlEscape) -}}
+  {{- else -}}
+    {{- if eq $k "alt" }}{{ $img = printf `%s alt=""` $img }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- $img = printf "%s>" $img -}}
+{{- if $webp -}}
+<picture><source srcset="{{ delimit $webp ", " }}"{{ if and .sizes (gt (len $webp) 1) }} sizes="{{ .sizes }}"{{ end }} type="image/webp">{{ $img | safeHTML }}</picture>
+{{- else -}}
+{{ $img | safeHTML }}
+{{- end -}}

@@ -1,0 +1,58 @@
+{{- /* The context lines above a reply, like, repost, bookmark or RSVP:
+       "↩ In reply to example.com/…", marked up so the URL is u-in-reply-to and
+       so on. Clodd's order: repost, like, reply, bookmark.
+
+       Front matter in_reply_to, like_of, repost_of and bookmark_of each take a
+       URL or a list of them. An rsvp (yes, no, maybe, interested) relabels the
+       first in_reply_to only: an RSVP answers one event, and a second reply
+       target stays an ordinary reply. The value goes in a <data class="p-rsvp">
+       so a parser reads "yes" rather than the words.
+
+       Renders nothing when there are no contexts. */ -}}
+{{- $p := . -}}
+{{- $kinds := slice
+  (dict "key" "repost_of"   "symbol" "♺" "verb" "Reposted"    "class" "u-repost-of")
+  (dict "key" "like_of"     "symbol" "♥" "verb" "Liked"       "class" "u-like-of")
+  (dict "key" "in_reply_to" "symbol" "↩" "verb" "In reply to" "class" "u-in-reply-to")
+  (dict "key" "bookmark_of" "symbol" "" "verb" "Bookmarked"  "class" "u-bookmark-of")
+-}}
+{{- $rsvpLabels := dict
+  "yes"        (slice "✓" "Going to")
+  "no"         (slice "✗" "Not going to")
+  "maybe"      (slice "?" "Maybe going to")
+  "interested" (slice "☆" "Interested in")
+-}}
+{{- $rsvp := lower (strings.TrimSpace (string ($p.Params.rsvp | default ""))) -}}
+{{- $rsvpLeft := isset $rsvpLabels $rsvp -}}
+{{- range $kinds -}}
+  {{- $kind := . -}}
+  {{- $urls := index $p.Params .key | default slice -}}
+  {{- if reflect.IsSlice $urls | not }}{{ $urls = slice $urls }}{{ end -}}
+  {{- range $urls -}}
+    {{- $url := strings.TrimSpace (string .) -}}
+    {{- if $url -}}
+      {{- $symbol := $kind.symbol -}}
+      {{- $verb := $kind.verb -}}
+      {{- $answer := "" -}}
+      {{- if and (eq $kind.key "in_reply_to") $rsvpLeft -}}
+        {{- $symbol = index (index $rsvpLabels $rsvp) 0 -}}
+        {{- $verb = index (index $rsvpLabels $rsvp) 1 -}}
+        {{- $answer = $rsvp -}}
+        {{- $rsvpLeft = false -}}
+      {{- end -}}
+      {{- $text := replaceRE `^https?://` "" $url -}}
+      {{- if gt (len $text) 60 }}{{ $text = printf "%s…" (substr $text 0 57) }}{{ end }}
+<p class="post__context">
+  {{- if eq $kind.key "bookmark_of" -}}
+  {{- /* Unicode has no quiet bookmark glyph — 🔖 arrives as a full-colour emoji
+         beside three plain characters — so this one is drawn: Font Awesome
+         Free 6.7.2's solid bookmark (CC BY 4.0), sized in em so it tracks the
+         line, and carrying its own width and height for feed readers that
+         keep the SVG but not the stylesheet. */ -}}
+  <svg class="post__context-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512" width=".64em" height=".85em" aria-hidden="true" focusable="false"><path fill="currentColor" d="M0 48V487.7C0 501.1 10.9 512 24.3 512c5 0 9.9-1.5 14-4.4L192 400 345.7 507.6c4.1 2.9 9 4.4 14 4.4c13.4 0 24.3-10.9 24.3-24.3V48c0-26.5-21.5-48-48-48H48C21.5 0 0 21.5 0 48z"/></svg>
+  {{- else -}}
+  <span aria-hidden="true">{{ $symbol }}</span>
+  {{- end }} {{ with $answer }}<data class="p-rsvp" value="{{ . }}">{{ $verb }}</data>{{ else }}{{ $verb }}{{ end }} <a class="{{ $kind.class }}" href="{{ $url }}" rel="nofollow">{{ $text }}</a></p>
+    {{- end -}}
+  {{- end -}}
+{{- end -}}

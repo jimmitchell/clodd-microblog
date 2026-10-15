@@ -10,6 +10,9 @@
 {{- $parts := split (resources.Get "css/theme.css").Content $marker -}}
 {{- $fonts := "fonts/" | relURL -}}
 {{- $critical := replace (index $parts 0) "url('/fonts/" (printf "url('%s" $fonts) -}}
+{{- /* The external-link arrow excludes links back to the site itself, which
+       Clodd's stylesheet spells out as its own host. */ -}}
+{{- $critical = replace $critical `[href*="//jimmitchell.org"]` (printf `[href*="//%s"]` (urls.Parse site.BaseURL).Host) -}}
 {{- $critical = resources.FromString "css/theme.critical.css" $critical | minify -}}
 {{- $deferred := resources.FromString "css/theme.deferred.css" (index $parts 1) | minify | fingerprint -}}
 <style>{{ $critical.Content | safeCSS }}</style>

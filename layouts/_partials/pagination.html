@@ -1,0 +1,17 @@
+{{- /* Newer / Page N of M / Older, with the ends shown disabled. */ -}}
+{{- $pager := . -}}
+{{- if gt $pager.TotalPages 1 }}
+<nav class="pagination" aria-label="Pagination">
+    {{- with $pager.Prev }}
+    <a href="{{ .URL }}" class="pagination__prev" rel="prev">← Newer</a>
+    {{- else }}
+    <span class="pagination__prev pagination__prev--disabled">← Newer</span>
+    {{- end }}
+    <span class="pagination__info">Page {{ $pager.PageNumber }} of {{ $pager.TotalPages }}</span>
+    {{- with $pager.Next }}
+    <a href="{{ .URL }}" class="pagination__next" rel="next">Older →</a>
+    {{- else }}
+    <span class="pagination__next pagination__next--disabled">Older →</span>
+    {{- end }}
+</nav>
+{{- end -}}

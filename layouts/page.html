@@ -1,0 +1,14 @@
+{{ define "main" }}
+{{- if in site.MainSections .Section }}
+{{- partial "post/entry.html" . }}
+{{- else }}
+<section class="page">
+    <header class="post__header">
+        <h1 class="post__title">{{ .Title }}</h1>
+    </header>
+    <div class="post__content prose">
+        {{ .Content }}
+    </div>
+</section>
+{{- end }}
+{{ end }}

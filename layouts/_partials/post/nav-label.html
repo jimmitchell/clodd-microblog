@@ -1,0 +1,1 @@
+{{- with .Title }}{{ . }}{{ else }}{{ .Date | time.Format (site.Params.date_format | default "January 2, 2006") }}, {{ .Date.Format "3:04 PM" }}{{ end -}}

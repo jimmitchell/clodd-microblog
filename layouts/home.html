@@ -1,11 +1,16 @@
 {{ define "main" }}
-{{- /* Phase 1 placeholder list. Phase 3 replaces it with the h-card intro
-       and the h-feed of cards. */}}
-<div class="post__content prose">
-<ul>
-  {{- range (partial "pager.html" .).Pages }}
-  <li><a href="{{ .RelPermalink }}">{{ .Title | default (.Date.Format "January 2, 2006") }}</a></li>
-  {{- end }}
-</ul>
+{{- $pager := partial "pager.html" . }}
+{{- if eq $pager.PageNumber 1 }}
+{{- partial "home-intro.html" . }}
+{{- end }}
+<div class="post-list h-feed">
+    <data class="p-name" value="{{ site.Title }}"></data>
+    {{- range $i, $p := $pager.Pages }}
+    {{- /* Only the first card of page one is reliably above the fold. */}}
+    {{ partial "post-card.html" (dict "page" $p "lead" (and (eq $i 0) (eq $pager.PageNumber 1))) }}
+    {{- else }}
+    <p class="post-list__empty">Nothing published yet. Check back soon.</p>
+    {{- end }}
 </div>
+{{- partial "pagination.html" $pager }}
 {{ end }}

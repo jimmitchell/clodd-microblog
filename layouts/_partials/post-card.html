@@ -1,0 +1,73 @@
+{{- /* One h-entry card in a post list. Arguments (a dict):
+         page — the post
+         lead — true for the one card above the fold on page one, whose
+                image is the Largest Contentful Paint element
+
+       The three kinds differ structurally, not decoratively:
+         note    — compact, the whole body, the date as the permalink
+         photo   — the picture first, the date after it as a credit line
+         article — title, excerpt, thumbnail, and a footer rule carrying the
+                   date and reading time */ -}}
+{{- $p := .page -}}
+{{- $kind := partial "post-kind.html" $p -}}
+{{- $iso := $p.Date.UTC.Format "2006-01-02T15:04:05Z" -}}
+{{- $date := $p.Date | time.Format (site.Params.card_date_format | default "January 2, 2006") -}}
+{{- $contexts := partial "contexts.html" $p -}}
+<article class="post-card h-entry post-card--{{ $kind }}">
+    <div class="post-card__inner">
+
+        {{- if eq $kind "article" }}
+        <h2 class="post-card__title">
+            <a href="{{ $p.Permalink }}" class="u-url p-name">{{ $p.Title }}</a>
+        </h2>
+        {{- end }}
+
+        {{- if eq $kind "note" }}
+        {{- /* Notes have no title, so the date carries the permalink. A photo
+               post's date moves below the picture instead. */}}
+        <time class="post-card__date dt-published" datetime="{{ $iso }}">
+            <a class="u-url" href="{{ $p.Permalink }}">{{ $date }}</a>
+        </time>
+        {{- end }}
+
+        {{- with $contexts }}
+        <div class="post-card__contexts">{{ . }}</div>
+        {{- end }}
+
+        {{- if eq $kind "article" }}
+        {{- /* A titled post's image illustrates rather than leads: a thumbnail.
+               u-featured, since an article's lead picture is not its photo
+               property. Safe to take from the body here — the card shows the
+               excerpt, never the body, so nothing is drawn twice. */}}
+        {{- with partial "featured.html" $p }}
+        <figure class="post-card__photo post-card__photo--thumb">
+            {{ partial "image.html" (dict "page" $p "src" .url "alt" .alt "class" "u-featured" "sizes" "(max-width: 44rem) 100vw, 640px" "eager" $.lead) }}
+        </figure>
+        {{- end }}
+
+        {{- with $p.Summary | plainify | htmlUnescape | strings.TrimSpace }}
+        <p class="post-card__excerpt p-summary">{{ . | truncate 200 }}</p>
+        {{- end }}
+
+        {{- /* The footer rule is the article's tell: only a long-form post has
+               further to go, so only a long-form post says how far. */}}
+        <footer class="post-card__meta">
+            <time class="dt-published" datetime="{{ $iso }}">{{ $date }}</time>
+            <span class="post-card__readtime">{{ partial "reading-time.html" $p }} min read →</span>
+        </footer>
+
+        {{- else }}
+        {{- $body := partial "photo-content.html" (dict "page" $p "kind" $kind) }}
+        {{- if strings.TrimSpace $body }}
+        <div class="post-card__body prose e-content">{{ $body | safeHTML }}</div>
+        {{- end }}
+
+        {{- if eq $kind "photo" }}
+        <time class="post-card__date post-card__date--after dt-published" datetime="{{ $iso }}">
+            <a class="u-url" href="{{ $p.Permalink }}">{{ $date }}</a>
+        </time>
+        {{- end }}
+        {{- end }}
+
+    </div>
+</article>
