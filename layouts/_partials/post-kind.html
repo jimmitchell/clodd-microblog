@@ -1,0 +1,21 @@
+{{- /* "article", "note" or "photo", derived from the content so existing
+       posts need no new front matter:
+         article — has a title
+         photo   — no title, and either filed in params.photos_category or
+                   opening with a picture
+         note    — no title, anything else
+       Only regular pages have a kind; everything else is "". */ -}}
+{{- $kind := "" -}}
+{{- if .IsPage -}}
+  {{- if .Title -}}
+    {{- $kind = "article" -}}
+  {{- else -}}
+    {{- $kind = "note" -}}
+    {{- $photos := lower (site.Params.photos_category | default "") -}}
+    {{- $cats := apply (.Params.categories | default slice) "lower" "." -}}
+    {{- if or (and $photos (in $cats $photos)) (partial "leading-image.html" .) -}}
+      {{- $kind = "photo" -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $kind -}}

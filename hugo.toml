@@ -26,6 +26,11 @@
   footer_text = ""
 
   custom_css = ""
+
+  # Path or URL. Empty uses the theme's favicon.svg.
+  favicon = ""
+
+  # Emitted on the home page only.
   google_site_verification = ""
 
   [params.author]

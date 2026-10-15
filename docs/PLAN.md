@@ -9,7 +9,7 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
 - **URLs don't change.** Category archives stay at `/categories/<slug>/` rather than Clodd's `/category/<slug>/`. Post permalinks are the site's, not the theme's.
 - **Post kind comes from the content.**
   - No title → note.
-  - A titleless post in the Photos category, or one that is mostly images → photo.
+  - A titleless post in the Photos category, or one whose body opens with an image → photo.
   - Anything else → article.
 
   The site's existing posts need no edits.
@@ -31,8 +31,12 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
   - Footer: social links with rel="me".
   - Port `theme.js`. The newsletter handler is held back for phase 3, because it expects Clodd's `subscribe.php`.
   - Also added: a `footer_text` param, and empty `hooks/head-end.html` and `hooks/body-end.html` partials for sites to override.
-- [ ] **2. Head and discovery.**
+- [x] **2. Head and discovery.**
   - Open Graph, JSON-LD, `fediverse:creator`, rel="me" (including Bridgy Fed).
+  - The share image follows the site's existing rule rather than Clodd's: `featured`, then the first body image, on notes too. Clodd gives notes no `og:image`, which would have dropped the picture from shared photo posts. The extra tags from the site's override (`og:site_name`, `og:locale`, `article:` times, image dimensions and alt, Twitter cards) are kept as well.
+  - Added `<link rel="canonical">`. Clodd only has `og:url`.
+  - Pingback uses webmention.io's per-domain endpoint (`/<domain>/xmlrpc`). Clodd links the bare `/xmlrpc`.
+  - Feed links: one per feed type, the site's first, plus the term's own on category and tag pages.
   - webmention/pingback, IndieAuth/Micropub, feed alternates (including per-term feeds), sitemap, favicon. (Custom CSS landed in phase 1.)
 - [ ] **3. Content templates.**
   - Home: the h-card intro and an h-feed of cards in three variants.

@@ -1,0 +1,17 @@
+{{- /* An article's lead picture, as dict url/alt/stored, or false.
+
+       front matter `featured` first (stored: true). Otherwise an article
+       whose body opens with an image uses that one (stored: false): the
+       picture is already in the body, so a template must not draw it again.
+       Notes and photo posts lead with their own pictures and never have one. */ -}}
+{{- $out := false -}}
+{{- with .Params.featured -}}
+  {{- $out = dict "url" . "alt" ($.Params.featured_alt | default "") "stored" true -}}
+{{- else -}}
+  {{- if eq (partial "post-kind.html" .) "article" -}}
+    {{- with partial "leading-image.html" . -}}
+      {{- $out = merge . (dict "stored" false) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}

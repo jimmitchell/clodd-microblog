@@ -15,18 +15,7 @@
                  alone, while a screen reader still hears the name). The
                  footer names its links with aria-label instead. */ -}}
 {{- $social := site.Params.social | default dict -}}
-{{- $mastodon := "" -}}
-{{- with $social.mastodon -}}
-  {{- if strings.HasPrefix . "https://" -}}
-    {{- $mastodon = . -}}
-  {{- else -}}
-    {{- $handle := strings.TrimPrefix "@" . -}}
-    {{- $bits := split $handle "@" -}}
-    {{- if and (eq (len $bits) 2) (index $bits 0) (index $bits 1) -}}
-      {{- $mastodon = printf "https://%s/@%s" (index $bits 1) (index $bits 0) -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
+{{- $mastodon := (partialCached "mastodon.html" . "mastodon").url -}}
 {{- $links := slice
   (dict "key" "mastodon" "name" "Mastodon" "url" $mastodon "rel" "me noopener")
   (dict "key" "bluesky" "name" "Bluesky" "url" ($social.bluesky | default "") "rel" "me atproto noopener")

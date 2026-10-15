@@ -1,0 +1,38 @@
+{{- /* The picture a link to this page shows in previews, as dict url
+       (absolute), width, height, alt, or false. The first of:
+         1. front matter `featured`
+         2. the first image anywhere in the body, for any kind of post, so
+            notes and photo posts preview with their own picture
+       Local uploads are referenced by URL but read from assets (a site
+       mounts static/media there), which gives their size and lets an
+       oversized one be scaled to 1200px wide. */ -}}
+{{- $out := false -}}
+{{- $src := "" -}}
+{{- $alt := "" -}}
+{{- if .IsPage -}}
+  {{- with .Params.featured -}}
+    {{- $src = . -}}
+    {{- $alt = $.Params.featured_alt | default "" -}}
+  {{- else -}}
+    {{- with findRESubmatch `<img\b[^>]*>` (string .Content) 1 -}}
+      {{- $tag := index (index . 0) 0 -}}
+      {{- with findRESubmatch `\ssrc="([^"]+)"` $tag 1 }}{{ $src = index (index . 0) 1 | htmlUnescape }}{{ end -}}
+      {{- with findRESubmatch `\salt="([^"]*)"` $tag 1 }}{{ $alt = index (index . 0) 1 | htmlUnescape }}{{ end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- with $src -}}
+  {{- $lookup := strings.TrimPrefix "/" . -}}
+  {{- with findRESubmatch `^https?://[^/]+/(.+)$` . 1 }}{{ $lookup = index (index . 0) 1 }}{{ end -}}
+  {{- $res := false -}}
+  {{- if not (strings.HasPrefix . "data:") -}}
+    {{- $res = or ($.Resources.Get $lookup) (resources.Get $lookup) -}}
+  {{- end -}}
+  {{- if and $res (eq $res.ResourceType "image") (in (slice "jpeg" "png" "webp" "gif") $res.MediaType.SubType) -}}
+    {{- if gt $res.Width 1200 }}{{ $res = $res.Resize "1200x" }}{{ end -}}
+    {{- $out = dict "url" $res.Permalink "width" $res.Width "height" $res.Height "alt" $alt -}}
+  {{- else if not (strings.HasPrefix . "data:") -}}
+    {{- $out = dict "url" (absURL .) "width" 0 "height" 0 "alt" $alt -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}

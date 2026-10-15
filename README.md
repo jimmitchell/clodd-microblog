@@ -63,7 +63,8 @@ params:
   home_intro: ""            # after "Hey, I'm <name>." Falls back to author.bio
   footer_text: ""           # Markdown; empty shows "© <year> <site title>"
   custom_css: ""            # injected after the theme's styles
-  google_site_verification: ""
+  favicon: ""               # path or URL; default is the theme's favicon.svg
+  google_site_verification: ""   # home page only
 
   author:
     name: Sam Example
@@ -129,7 +130,17 @@ The header shows a search button, and the search overlay, when the site has a pa
 |---|---|---|---|
 | Article | Has a `title` | Title, summary, date and reading time | Heading, byline, reading time, category and tag pills |
 | Note | No `title` | The whole body | No heading or byline |
-| Photo | No `title`, and either in `photos_category` or mostly images | Picture first, edge to edge | Pictures, then caption |
+| Photo | No `title`, and either in `photos_category` or opening with an image | Picture first, edge to edge | Pictures, then caption |
+
+### Share images
+
+A post's `og:image` is the first of:
+
+1. its `featured` image
+2. the first image anywhere in its body, for any kind of post, so notes and photo posts preview with their own picture
+3. a generated card (coming in phase 5)
+
+A local image is scaled to 1200px wide and given its dimensions. For that, Hugo has to be able to read the file as an asset: a site with uploads in `static/media` mounts that folder into `assets/media` too. See [exampleSite/hugo.yaml](exampleSite/hugo.yaml).
 
 ## Front matter
 

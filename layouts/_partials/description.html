@@ -1,0 +1,23 @@
+{{- /* Plain-text meta description, as Clodd writes it:
+         home      — params.description
+         term      — the term's own description, else "<site> posts in category X"
+         404       — a fixed line
+         otherwise — front matter description, else the summary (front matter
+                     `summary`, or the opening of the body), cut to 160
+       Anything that comes out empty falls back to params.description. */ -}}
+{{- $d := "" -}}
+{{- if .IsHome -}}
+  {{- $d = site.Params.description -}}
+{{- else if eq .Kind "term" -}}
+  {{- $d = .Description -}}
+  {{- if not $d -}}
+    {{- $d = cond (eq .Data.Singular "tag")
+          (printf "%s posts tagged %s" site.Title .Title)
+          (printf "%s posts in %s %s" site.Title .Data.Singular .Title) -}}
+  {{- end -}}
+{{- else if eq .Kind "404" -}}
+  {{- $d = "The page you requested could not be found." -}}
+{{- else -}}
+  {{- $d = .Description | default (.Summary | plainify | htmlUnescape | strings.TrimSpace | truncate 160) -}}
+{{- end -}}
+{{- return (or $d site.Params.description "" | replaceRE `\s+` " " | strings.TrimSpace) -}}

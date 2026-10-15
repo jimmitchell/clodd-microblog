@@ -1,0 +1,13 @@
+{{- /* Tinylytics, when params.tinylytics.code is set. `kudos` turns on the
+       Kudos button's counter; `events` makes the script send clicks on
+       anything carrying data-tinylytics-event, and `auto` adds outbound links
+       and file downloads without tagging each one. */ -}}
+{{- $t := site.Params.tinylytics | default dict -}}
+{{- with $t.code -}}
+{{- $query := slice -}}
+{{- with $t.kudos }}{{ $query = $query | append (printf "kudos=%s" (urlquery .)) }}{{ end -}}
+{{- if $t.events }}{{ $query = $query | append "events" "auto" }}{{ end -}}
+{{- $src := printf "https://tinylytics.app/embed/%s.js" (urlquery .) -}}
+{{- with $query }}{{ $src = printf "%s?%s" $src (delimit . "&") }}{{ end }}
+<script src="{{ $src | safeURL }}" defer></script>
+{{- end -}}

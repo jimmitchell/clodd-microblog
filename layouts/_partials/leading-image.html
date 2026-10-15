@@ -1,0 +1,15 @@
+{{- /* The image a post's body opens with, as dict url/alt, or nil when the
+       body starts with anything else. Only wrappers a picture can arrive in
+       are allowed before the <img>: a paragraph, a figure, a link, a
+       <picture> and its <source>s. */ -}}
+{{- $out := false -}}
+{{- $re := `^\s*(?:<(?:p|figure|a|picture|source)\b[^>]*>\s*)*<img\b([^>]*)>` -}}
+{{- with findRESubmatch $re (string .Content) 1 -}}
+  {{- $attrs := index (index . 0) 1 -}}
+  {{- with findRESubmatch `\ssrc="([^"]+)"` $attrs 1 -}}
+    {{- $alt := "" -}}
+    {{- with findRESubmatch `\salt="([^"]*)"` $attrs 1 }}{{ $alt = index (index . 0) 1 | htmlUnescape }}{{ end -}}
+    {{- $out = dict "url" (index (index . 0) 1 | htmlUnescape) "alt" $alt -}}
+  {{- end -}}
+{{- end -}}
+{{- return $out -}}

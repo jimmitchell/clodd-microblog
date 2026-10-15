@@ -1,0 +1,6 @@
+{{- /* params.favicon, or the theme's own SVG. The type follows the file
+       extension. */ -}}
+{{- $href := site.Params.favicon | default "favicon.svg" -}}
+{{- $ext := path.Ext (urls.Parse $href).Path | strings.TrimPrefix "." | lower -}}
+{{- $types := dict "svg" "image/svg+xml" "png" "image/png" "jpg" "image/jpeg" "jpeg" "image/jpeg" "gif" "image/gif" "webp" "image/webp" "ico" "image/x-icon" -}}
+<link rel="icon" href="{{ $href | relURL }}" type="{{ index $types $ext | default "image/png" }}">

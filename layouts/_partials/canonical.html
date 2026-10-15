@@ -1,0 +1,9 @@
+{{- /* This page's absolute URL. A paginated list is canonical at its own
+       page (/page/2/), not at page one. Empty for the 404 page. */ -}}
+{{- $url := .Permalink -}}
+{{- if or .IsHome (eq .Kind "term") -}}
+  {{- $url = (partial "pager.html" .).URL | absURL -}}
+{{- else if eq .Kind "404" -}}
+  {{- $url = "" -}}
+{{- end -}}
+{{- return $url -}}
