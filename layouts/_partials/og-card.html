@@ -1,0 +1,73 @@
+{{- /* The generated share card for an article: Clodd's OgImage, drawn with
+       Hugo's image filters. 1200×630 in the dark scheme's colours, the
+       avatar and site name at the top left, and the title in bold DM Sans
+       hung off the foot, so a run of cards shares a baseline.
+
+       Returns the image resource, published beside the post as og.png, or
+       false. Only articles get one: a note has no title to draw, and
+       share-image.html offers a post's own pictures before this.
+
+       Sizes are Clodd's, converted from its points to pixels (×4/3). Hugo
+       cannot measure text from a template, so the title's size is chosen
+       from its length, using DM Sans Bold's average letter width, and a
+       title too long for seven lines at the smallest size is cut short.
+       Hugo wraps the words itself, so the guess only has to be close. */ -}}
+{{- $out := false -}}
+{{- if and (ne site.Params.share_cards false) (eq (partial "post-kind.html" .) "article") (in site.MainSections .Section) -}}
+  {{- $base := resources.Get "clodd/og-base.png" -}}
+  {{- $font := resources.Get "clodd/og-bold.ttf" -}}
+  {{- $pad := 80 -}}
+  {{- $edge := 76 -}}
+
+  {{- /* Title. The longest it can be is seven lines at the smallest size. */ -}}
+  {{- $title := .Title | plainify | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace -}}
+  {{- if gt (strings.RuneCount $title) 250 -}}
+    {{- $title = printf "%s…" (substr $title 0 249 | strings.TrimRight " ,;:.-") -}}
+  {{- end -}}
+  {{- $chars := strings.RuneCount $title -}}
+  {{- /* Largest size, from 81 down to 43, whose estimated wrap is at most
+         four lines of the 1040px measure. 0.48em per letter, plus a tenth for
+         the ragged ends of wrapped lines. */ -}}
+  {{- $size := 43 -}}
+  {{- range seq 81 -1 43 -}}
+    {{- if and (eq $size 43) (le (math.Ceil (div (mul $chars 0.48 . 1.1) 1040.0)) 4) -}}
+      {{- $size = . -}}
+    {{- end -}}
+  {{- end -}}
+  {{- /* Hugo steps lines by the font's ascent; this adds the air that makes
+         Clodd's spacing (the ink of a full line plus 0.09em). The last
+         baseline leaves room for a descender above the bottom margin. */ -}}
+  {{- $linespacing := math.Round (mul $size 0.06) | int -}}
+  {{- $baseline := sub (sub 630 $pad) (math.Round (mul $size 0.22)) | int -}}
+  {{- /* Drawn on a copy cut 60px narrower, because Hugo wraps 20px short of
+         the image's right edge: this way the title keeps Clodd's 80px margin
+         on both sides. */ -}}
+  {{- $titleLayer := $base.Crop "1140x630 TopLeft" | images.Filter (images.Text $title (dict
+        "font" $font "size" $size "color" "#E8E8E8"
+        "x" $pad "y" $baseline "aligny" "bottom" "linespacing" $linespacing)) -}}
+  {{- $filters := slice (images.Overlay $titleLayer 0 0) -}}
+
+  {{- /* Site name: bold, muted, beside the avatar and on its centre line.
+         Without an avatar it sits at the top-left corner of the padding. */ -}}
+  {{- $nameX := $pad -}}
+  {{- $nameY := sub $pad 13 -}}
+  {{- with site.Params.author.avatar -}}
+    {{- if not (or (strings.HasPrefix . "http://") (strings.HasPrefix . "https://")) -}}
+      {{- with resources.Get (strings.TrimPrefix "/" .) -}}
+        {{- if and (eq .ResourceType "image") (ne .MediaType.SubType "svg") -}}
+          {{- $face := .Fill (printf "%dx%d png Center" $edge $edge) | images.Filter (images.Mask (resources.Get "clodd/og-mask.png")) -}}
+          {{- $filters = $filters | append (images.Overlay $face $pad $pad) -}}
+          {{- $nameX = add $pad $edge 26 -}}
+          {{- $nameY = add $pad 7 -}}
+        {{- end -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- with site.Title -}}
+    {{- $filters = $filters | append (images.Text . (dict "font" $font "size" 48 "color" "#9E9E9E" "x" $nameX "y" $nameY)) -}}
+  {{- end -}}
+
+  {{- $card := $base | images.Filter $filters -}}
+  {{- $out = resources.Copy (path.Join (strings.TrimPrefix "/" .RelPermalink) "og.png") $card -}}
+{{- end -}}
+{{- return $out -}}

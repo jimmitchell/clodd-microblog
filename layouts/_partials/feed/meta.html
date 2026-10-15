@@ -1,0 +1,13 @@
+{{- /* A feed's title, description and the page it belongs to. Clodd's
+       wording: a category or tag feed is "<site> — Category: <name>". */ -}}
+{{- $title := site.Title -}}
+{{- $description := site.Params.description -}}
+{{- if eq .Kind "term" -}}
+  {{- $label := .Data.Singular | humanize -}}
+  {{- $title = printf "%s — %s: %s" site.Title $label .Title -}}
+  {{- $description = partial "description.html" . -}}
+{{- else if not .IsHome -}}
+  {{- $title = printf "%s — %s" site.Title .Title -}}
+  {{- $description = .Description | default $description -}}
+{{- end -}}
+{{- return dict "title" $title "description" ($description | default $title) "link" .Permalink -}}

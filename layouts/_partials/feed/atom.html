@@ -1,0 +1,51 @@
+{{- /* Atom 1.0, as Clodd writes it. A note's <title> is empty: Atom
+       requires the element but not any text in it. */ -}}
+{{- $meta := partial "feed/meta.html" . -}}
+{{- $pages := partial "feed/pages.html" . -}}
+{{- $self := (.OutputFormats.Get "atom").Permalink -}}
+{{- $site := strings.TrimSuffix "/" site.Home.Permalink -}}
+{{- $author := site.Params.author.name -}}
+{{- $updated := "1970-01-01T00:00:00Z" -}}
+{{- with $pages }}{{ $updated = (index .ByLastmod.Reverse 0).Lastmod.Format "2006-01-02T15:04:05-07:00" }}{{ end -}}
+{{- printf `<?xml version="1.0" encoding="utf-8"?>` | safeHTML }}
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:byline="https://bylinespec.org/1.0">
+  <title>{{ $meta.title }}</title>
+  {{- with $meta.description }}
+  <subtitle>{{ . }}</subtitle>
+  {{- end }}
+  <link href="{{ $meta.link }}" rel="alternate" type="text/html"/>
+  <link href="{{ $self }}" rel="self" type="application/atom+xml"/>
+  <id>{{ $self }}</id>
+  <updated>{{ $updated }}</updated>
+  <generator uri="https://gohugo.io/" version="{{ hugo.Version }}">Hugo</generator>
+  {{- with $author }}
+  <author>
+    <name>{{ . }}</name>
+    <uri>{{ $site }}</uri>
+    {{- with site.Params.author.email }}
+    <email>{{ . }}</email>
+    {{- end }}
+  </author>
+  {{- end }}
+  {{- partial "feed/byline.html" . }}
+  {{- range $pages }}
+  <entry>
+    {{- with .Title }}
+    <title>{{ . | plainify | htmlUnescape }}</title>
+    {{- else }}
+    <title></title>
+    {{- end }}
+    <link href="{{ .Permalink }}" rel="alternate" type="text/html"/>
+    <id>{{ .Permalink }}</id>
+    <published>{{ .PublishDate.Format "2006-01-02T15:04:05-07:00" }}</published>
+    <updated>{{ .Lastmod.Format "2006-01-02T15:04:05-07:00" }}</updated>
+    {{- range .Params.categories }}
+    <category term="{{ . }}"/>
+    {{- end }}
+    <content type="html">{{ partial "feed/content.html" . | transform.XMLEscape | safeHTML }}</content>
+    {{- if $author }}
+    <byline:author ref="{{ $site }}/#author"/>
+    {{- end }}
+  </entry>
+  {{- end }}
+</feed>

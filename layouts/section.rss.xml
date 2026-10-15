@@ -1,0 +1,3 @@
+{{- /* RSS for a section. The page listing every category or tag (a taxonomy
+       page) keeps Hugo's own feed of terms. */ -}}
+{{- partial "feed/rss.html" (dict "page" . "self" (.OutputFormats.Get "rss").Permalink) -}}

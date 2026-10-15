@@ -1,0 +1,1 @@
+{{- partial "feed/json.html" . | jsonify (dict "indent" "  " "noHTMLEscape" true) -}}

@@ -1,0 +1,26 @@
+{{- /* A post's HTML for a feed item, as Clodd writes it: the context lines
+       of a reply, like, repost, bookmark or RSVP; the featured image, when
+       front matter names one (a picture already in the body is not drawn
+       twice); the body; and, with Tinylytics on, a tracking pixel, which is
+       how Clodd counts feed reads.
+
+       Feed readers resolve nothing against the site, so root-relative src,
+       href, poster and srcset URLs are made absolute. */ -}}
+{{- $html := "" -}}
+{{- with partial "contexts.html" . -}}
+  {{- $html = printf `<div class="post__contexts">%s</div>` . -}}
+{{- end -}}
+{{- with partial "featured.html" . -}}
+  {{- if .stored -}}
+    {{- $html = printf `%s<p><img src="%s" alt="%s"></p>` $html (absURL .url) (.alt | htmlEscape) -}}
+  {{- end -}}
+{{- end -}}
+{{- $html = printf "%s%s" $html .Content -}}
+{{- with site.Params.tinylytics.code -}}
+  {{- $pixel := printf "https://tinylytics.app/pixel/%s.gif?path=%s" . ($.RelPermalink | urlquery) -}}
+  {{- $html = printf `%s<img src="%s" alt="" style="width:1px;height:1px;border:0;" />` $html $pixel -}}
+{{- end -}}
+{{- $base := strings.TrimSuffix "/" site.BaseURL -}}
+{{- $html = $html | replaceRE `((?:src|href|poster|srcset)=")/([^/])` (printf "${1}%s/${2}" $base) -}}
+{{- $html = $html | replaceRE `(\d+[wx]), /([^/])` (printf "${1}, %s/${2}" $base) -}}
+{{- return $html -}}

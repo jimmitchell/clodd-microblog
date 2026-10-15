@@ -8,6 +8,11 @@ theme: hugo-theme-clodd
 pagination:
   pagerSize: 10
 
+# Takes the theme's feeds: RSS, Atom and JSON Feed on the home page and on
+# every category and tag. Hugo leaves a theme's outputs out unless asked.
+outputs:
+  _merge: shallow
+
 permalinks:
   page:
     posts: /:year/:month/:day/:contentbasename/

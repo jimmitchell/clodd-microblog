@@ -1,0 +1,45 @@
+{{- /* RSS 2.0, as Clodd writes it. Takes dict page and self (this copy's
+       own URL, for atom:link). A note has no <title>, which RSS allows, so
+       a reader shows its text rather than a made-up headline. */ -}}
+{{- $p := .page -}}
+{{- $meta := partial "feed/meta.html" $p -}}
+{{- $pages := partial "feed/pages.html" $p -}}
+{{- $author := site.Params.author.name -}}
+{{- $site := strings.TrimSuffix "/" site.Home.Permalink -}}
+{{- printf `<?xml version="1.0" encoding="utf-8"?>` | safeHTML }}
+<rss version="2.0" xmlns:byline="https://bylinespec.org/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{ $meta.title }}</title>
+    <link>{{ $meta.link }}</link>
+    <description>{{ $meta.description }}</description>
+    <atom:link href="{{ .self }}" rel="self" type="application/rss+xml"/>
+    {{- with site.Language.Locale }}
+    <language>{{ lower . }}</language>
+    {{- end }}
+    {{- with $pages }}
+    <lastBuildDate>{{ (index .ByLastmod.Reverse 0).Lastmod.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</lastBuildDate>
+    {{- end }}
+    <generator>Hugo</generator>
+    {{- with and $author site.Params.author.email }}
+    <managingEditor>{{ . }} ({{ $author }})</managingEditor>
+    {{- end }}
+    {{- partial "feed/byline.html" $p }}
+    {{- range $pages }}
+    <item>
+      {{- with .Title }}
+      <title>{{ . | plainify | htmlUnescape }}</title>
+      {{- end }}
+      <link>{{ .Permalink }}</link>
+      <guid isPermaLink="true">{{ .Permalink }}</guid>
+      <pubDate>{{ .PublishDate.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</pubDate>
+      {{- with $author }}
+      <dc:creator>{{ . }}</dc:creator>
+      {{- end }}
+      <description>{{ partial "feed/content.html" . | transform.XMLEscape | safeHTML }}</description>
+      {{- if $author }}
+      <byline:author ref="{{ $site }}/#author"/>
+      {{- end }}
+    </item>
+    {{- end }}
+  </channel>
+</rss>

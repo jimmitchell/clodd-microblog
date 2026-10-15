@@ -1,0 +1,37 @@
+{{- /* JSON Feed 1.1, as Clodd writes it, plus the authors, icon and
+       language the spec offers. Byline has no JSON form; authors carries
+       the same name, URL and avatar. Each item's image is the post's own
+       picture, never the generated share card. */ -}}
+{{- $meta := partial "feed/meta.html" . -}}
+{{- $items := slice -}}
+{{- range partial "feed/pages.html" . -}}
+  {{- $item := dict
+    "id" .Permalink
+    "url" .Permalink
+    "content_html" (partial "feed/content.html" .)
+    "date_published" (.PublishDate.Format "2006-01-02T15:04:05-07:00")
+    "date_modified" (.Lastmod.Format "2006-01-02T15:04:05-07:00")
+  -}}
+  {{- with .Title }}{{ $item = merge $item (dict "title" (. | plainify | htmlUnescape)) }}{{ end -}}
+  {{- with .Params.summary }}{{ $item = merge $item (dict "summary" (. | plainify | htmlUnescape)) }}{{ end -}}
+  {{- with partial "post-image.html" . }}{{ $item = merge $item (dict "image" .url) }}{{ end -}}
+  {{- with .Params.categories }}{{ $item = merge $item (dict "tags" .) }}{{ end -}}
+  {{- $items = $items | append $item -}}
+{{- end -}}
+{{- $feed := dict
+  "version" "https://jsonfeed.org/version/1.1"
+  "title" $meta.title
+  "home_page_url" $meta.link
+  "feed_url" (.OutputFormats.Get "jsonfeed").Permalink
+  "items" $items
+-}}
+{{- with $meta.description }}{{ $feed = merge $feed (dict "description" .) }}{{ end -}}
+{{- with site.Language.Locale }}{{ $feed = merge $feed (dict "language" .) }}{{ end -}}
+{{- $avatar := (partialCached "avatar.html" . "avatar").url -}}
+{{- with site.Params.author.name -}}
+  {{- $author := dict "name" . "url" site.Home.Permalink -}}
+  {{- with $avatar }}{{ $author = merge $author (dict "avatar" .) }}{{ end -}}
+  {{- $feed = merge $feed (dict "authors" (slice $author)) -}}
+{{- end -}}
+{{- with $avatar }}{{ $feed = merge $feed (dict "icon" .) }}{{ end -}}
+{{- return $feed -}}

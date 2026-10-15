@@ -1,0 +1,11 @@
+{{- /* The posts a feed lists, newest first: the site's posts (pages in
+       mainSections) on the home page, and on a category, tag or section
+       just the ones filed there. services.rss.limit caps the count; Hugo's
+       default of unlimited is taken as 20, Clodd's default, since every
+       item carries the whole post. */ -}}
+{{- $pages := .RegularPages -}}
+{{- if .IsHome }}{{ $pages = site.RegularPages }}{{ end -}}
+{{- $pages = where $pages "Section" "in" site.MainSections -}}
+{{- $limit := site.Config.Services.RSS.Limit -}}
+{{- if le $limit 0 }}{{ $limit = 20 }}{{ end -}}
+{{- return first $limit $pages.ByPublishDate.Reverse -}}

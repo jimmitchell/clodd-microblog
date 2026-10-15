@@ -61,10 +61,14 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
   - The shared lightbox in `theme.js` gained a "View post" link for pictures that name their post (`data-post`), and steps only through pictures a filter has left visible.
   - Archive rows for a like or repost show the context line, since there are no words to show.
   - Tested against the real site: 693 pages indexed, 691 archive rows, 107 photos; the year filter, lightbox and result paging all work.
-- [ ] **5. Feeds and OG cards.**
-  - RSS at `/feed.xml`, `/index.xml` and `/feed.rss`; Atom at `/atom.xml`; JSON Feed.
-  - Byline in all of them, notes without titles, per-term feeds.
-  - OG cards with `images.Text` and the static DM Sans font from `clodd-cms/fonts/og/`.
+- [x] **5. Feeds and OG cards.**
+  - RSS at `/index.xml`, written again to `/feed.xml` and `/feed.rss` (`feeds.rss_copies`), each copy with its own self link; Atom at `/atom.xml`; JSON Feed at `/feed.json`. The home page and every category and tag get all three; a section keeps an RSS feed.
+  - Items are Clodd's: context lines, the stored featured image, the full body with absolute URLs, and the Tinylytics pixel. Notes have no RSS `<title>` and an empty Atom one. Byline person and org in RSS and Atom; JSON Feed has no Byline form, so `authors` carries the same details.
+  - Additions to Clodd: Atom entries carry `<category>`, JSON items carry `tags` (as the site's feed did), and a JSON item's `image` is the post's own picture.
+  - Hugo ignores a theme's `outputs`, so a site opts in with `outputs: {_merge: shallow}`. The README says so.
+  - The share card is drawn with `images.Text`, `images.Mask` and `images.Overlay` in Clodd's sizes (its points ×4/3) and lands within a pixel of Clodd's card. Hugo can't measure text from a template, so the title size comes from its length, and titles over 250 characters are cut short. Articles only, after the post's own pictures; 19 of the site's posts get one.
+  - Feed `<link>`s are written with printf so the `+` in each media type isn't escaped to `&#43;`.
+  - Validated with the W3C Feed Validator: RSS and Atom valid, warnings only for the Byline namespace and the same markup Clodd's feeds carry.
 - [ ] **6. Markup.**
   - Image render hook: lazy loading, dimensions, lightbox. Use `_partials/image.html`. On the lead card, load the first body image eagerly (Clodd's `promoteFirstImage`). Must not call `post-kind.html`, which renders `.Content` and would recurse.
   - Code blocks: Chroma's `xcode-dark` style and the copy button.
@@ -72,6 +76,8 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
 - [ ] **7. Site switchover** (on a branch of the site repo).
   - Install Go for Hugo modules (CI runners already have it).
   - Replace mnml and migrate the params.
+  - Feeds: drop the site's `jsonfeed`/`feedxml` output formats and `outputs`, add `outputs: {_merge: shallow}`, and delete `layouts/home.*.xml`, `home.jsonfeed.json` and `_partials/home-rss.xml`.
+  - Mount `static/images` into `assets/images` (as `static/media` already is), so the avatar is inlined in the header and drawn on share cards.
   - Delete the overrides in `layouts/` that the theme now covers.
   - Check that URLs are unchanged, then run lychee and mf2 validation.
 - [ ] **8. Micropub Worker.**

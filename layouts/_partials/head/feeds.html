@@ -3,13 +3,15 @@
        can tell them apart. Any output format with a feed media type counts,
        so a site's own feed formats are picked up as they are defined.
        One link per feed type: a site that serves the same feed at a second
-       URL advertises only the first. */ -}}
+       URL advertises only the first. Written with printf because html/template
+       would otherwise escape the + in each media type as &#43;, which a
+       naive feed finder doesn't decode. */ -}}
 {{- $feedTypes := slice "application/rss+xml" "application/atom+xml" "application/feed+json" -}}
 {{- $seen := slice }}
 {{- range site.Home.AlternativeOutputFormats }}
 {{- if and (in $feedTypes .MediaType.Type) (not (in $seen .MediaType.Type)) }}
 {{- $seen = $seen | append .MediaType.Type }}
-<link rel="alternate" type="{{ .MediaType.Type }}" title="{{ site.Title }}" href="{{ .Permalink }}">
+{{ printf `<link rel="alternate" type="%s" title="%s" href="%s">` .MediaType.Type (site.Title | htmlEscape) .Permalink | safeHTML }}
 {{- end }}
 {{- end }}
 {{- if eq .Kind "term" }}
@@ -18,7 +20,7 @@
 {{- range .AlternativeOutputFormats }}
 {{- if and (in $feedTypes .MediaType.Type) (not (in $seen .MediaType.Type)) }}
 {{- $seen = $seen | append .MediaType.Type }}
-<link rel="alternate" type="{{ .MediaType.Type }}" title="{{ $title }}" href="{{ .Permalink }}">
+{{ printf `<link rel="alternate" type="%s" title="%s" href="%s">` .MediaType.Type ($title | htmlEscape) .Permalink | safeHTML }}
 {{- end }}
 {{- end }}
 {{- end }}

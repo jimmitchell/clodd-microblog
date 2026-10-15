@@ -1,0 +1,31 @@
+{{- /* Byline (https://bylinespec.org/1.0) channel elements: the author as a
+       byline:person, the site as a byline:org of type personal. Items point
+       back at the person with byline:author ref. The root element declares
+       xmlns:byline. Nothing without params.author.name, as in Clodd. */ -}}
+{{- with site.Params.author.name -}}
+{{- $site := strings.TrimSuffix "/" site.Home.Permalink }}
+    <byline:person id="{{ $site }}/#author">
+      <byline:name>{{ . }}</byline:name>
+      {{- with site.Params.author.bio }}
+      <byline:context>{{ . | plainify | htmlUnescape }}</byline:context>
+      {{- end }}
+      <byline:url>{{ $site }}</byline:url>
+      {{- with (partialCached "avatar.html" $ "avatar").url }}
+      <byline:avatar>{{ . }}</byline:avatar>
+      {{- end }}
+      {{- with (partialCached "mastodon.html" $ "mastodon").url }}
+      <byline:profile href="{{ . }}" rel="mastodon"/>
+      {{- end }}
+      {{- with (site.Params.social | default dict).bluesky }}
+      <byline:profile href="{{ . }}" rel="bluesky"/>
+      {{- end }}
+      {{- with (site.Params.social | default dict).github }}
+      <byline:profile href="{{ . }}" rel="github"/>
+      {{- end }}
+    </byline:person>
+    <byline:org id="{{ $site }}/#org">
+      <byline:name>{{ site.Title }}</byline:name>
+      <byline:url>{{ $site }}</byline:url>
+      <byline:type>personal</byline:type>
+    </byline:org>
+{{- end -}}
