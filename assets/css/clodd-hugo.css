@@ -16,14 +16,35 @@
     color: var(--color-muted);
 }
 
+/* The browser's own caret sits against the border and won't move for
+   padding, so it's replaced with a chevron of our own, inset to match the
+   text's left padding. Drawn in --color-muted, which a data URI can't
+   reference, so each scheme gets its own copy. */
+:root {
+    --year-filter-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%236B6B6B' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --year-filter-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239E9E9E' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    }
+}
+
+[data-theme="dark"] {
+    --year-filter-caret: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='%239E9E9E' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
 .year-filter select {
+    -webkit-appearance: none;
+    appearance: none;
     border: 1px solid var(--color-border);
     border-radius: var(--radius);
-    background: var(--color-bg);
+    background: var(--color-bg) var(--year-filter-caret) no-repeat right .6rem center / .65rem auto;
     color: var(--color-text);
     font: inherit;
-    padding: .3rem .6rem;
+    padding: .3rem 1.9rem .3rem .6rem;
     outline: none;
+    cursor: pointer;
     transition: border-color .15s;
 }
 
