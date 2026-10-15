@@ -1,0 +1,20 @@
+{{- /* A fenced code block, as Clodd's HighlightFencedCodeRenderer writes
+       one: the .code-block wrapper the copy button anchors to (emitted here
+       so theme.js doesn't reflow the page by adding it), and a dark
+       xcode-dark <pre> in light mode and dark alike.
+
+       Chroma highlights it with classes rather than inline styles; inline
+       mode returns only the token spans, which go into Clodd's own <code>.
+       clodd-hugo.css colours Chroma's classes with Clodd's palette. A block
+       with no language, or one Chroma doesn't know, is plain text in the
+       same dark block. */ -}}
+{{- $lang := .Type | default "" -}}
+{{- $inner := "" -}}
+{{- if $lang -}}
+  {{- $h := transform.Highlight .Inner $lang (dict "noClasses" false "hl_inline" true) -}}
+  {{- $inner = replaceRE `^<code[^>]*>|</code>$` "" (string $h) -}}
+{{- else -}}
+  {{- $inner = .Inner | htmlEscape -}}
+{{- end -}}
+<div class="code-block code-block--dark"><pre class="syntax-hl"><code{{ with $lang }} class="language-{{ . }}"{{ end }}>{{ $inner | safeHTML }}</code></pre></div>
+{{- /**/ -}}

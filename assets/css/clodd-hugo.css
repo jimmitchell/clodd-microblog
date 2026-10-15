@@ -156,3 +156,19 @@
 
 /* ── Random ───────────────────────────────────────────────────────────────── */
 .random-page { color: var(--color-muted); }
+
+/* ── Syntax highlighting (Chroma) ─────────────────────────────────────────── */
+/* Clodd highlights with highlight.php and colours its hljs- classes in
+   theme.css. Hugo highlights with Chroma, whose classes are different, so
+   they get Clodd's xcode-dark palette here. Scoped to .syntax-hl because
+   Chroma's class names are one or two letters long. Operators and
+   punctuation stay the base colour, as they mostly do under highlight.php. */
+.syntax-hl :is(.c, .ch, .cm, .c1, .cs, .cpf)                 { color: #6c7986; font-style: italic; }
+.syntax-hl :is(.k, .kd, .kn, .kp, .kr, .kv, .ow, .nt)        { color: #ff7ab2; }
+.syntax-hl :is(.s, .sa, .sb, .sc, .dl, .sd, .s1, .s2, .se, .sh, .si, .sx, .sr, .ss, .na) { color: #ff8170; }
+.syntax-hl :is(.m, .mb, .mf, .mh, .mi, .il, .mo, .kc)        { color: #d9c97c; }
+.syntax-hl :is(.nb, .bp, .nf, .fm)                           { color: #4eb0cc; }
+.syntax-hl :is(.kt, .nc, .nv, .vc, .vg, .vi, .vm)            { color: #dabaff; }
+.syntax-hl :is(.cp, .nd)                                     { color: #dfdfe0; }
+.syntax-hl .gi                                               { color: #63da58; background: #1a3320; }
+.syntax-hl .gd                                               { color: #ff8170; background: #3d1a18; }

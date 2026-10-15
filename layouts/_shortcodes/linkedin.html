@@ -1,0 +1,9 @@
+{{- /* {{< linkedin urn="urn:li:share:1234567890" >}}, as Clodd's [linkedin]:
+       LinkedIn's embed page in an iframe. The URN comes from LinkedIn's
+       "Embed this post"; share, activity and ugcPost URNs are accepted. */ -}}
+{{- $urn := "" -}}
+{{- if .IsNamedParams }}{{ $urn = .Get "urn" }}{{ else }}{{ $urn = .Get 0 }}{{ end -}}
+{{- $urn = strings.TrimSpace (string $urn) -}}
+{{- if findRE `^urn:li:(?:share|activity|ugcPost):\d+$` $urn 1 -}}
+<div class="embed-social embed-social--linkedin"><iframe src="https://www.linkedin.com/embed/feed/update/{{ $urn }}" loading="lazy" allowfullscreen title="LinkedIn post"></iframe></div>
+{{- end -}}

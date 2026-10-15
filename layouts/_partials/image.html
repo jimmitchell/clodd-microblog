@@ -6,6 +6,11 @@
          sizes  — the sizes hint for the WebP <source>
          eager  — true for the Largest Contentful Paint image: loads eagerly,
                   at high priority, and decodes synchronously
+         attrs  — any other attributes for the <img> (title, style, an
+                  author's own loading…), as a dict. They win over the
+                  defaults, as in Clodd, except src, width and height, which
+                  come from the file when Hugo can read it. A class here is
+                  added to `class`.
 
        For a JPEG or PNG Hugo can read (a page resource, or under assets/,
        which a site's static/media is mounted into) it emits a <picture>: a
@@ -14,12 +19,15 @@
        before the bytes arrive. Anything else is a plain lazy <img>. */ -}}
 {{- $src := .src -}}
 {{- $attrs := dict "src" $src "alt" (.alt | default "") -}}
-{{- with .class }}{{ $attrs = merge $attrs (dict "class" .) }}{{ end -}}
 {{- if .eager -}}
   {{- $attrs = merge $attrs (dict "loading" "eager" "fetchpriority" "high" "decoding" "sync") -}}
 {{- else -}}
   {{- $attrs = merge $attrs (dict "loading" "lazy" "decoding" "async") -}}
 {{- end -}}
+{{- $extra := .attrs | default dict -}}
+{{- $class := delimit (slice (.class | default "") (index $extra "class" | default "")) " " | strings.TrimSpace -}}
+{{- $attrs = merge $attrs $extra -}}
+{{- $attrs = merge $attrs (dict "class" $class) -}}
 {{- $res := false -}}
 {{- if not (or (strings.HasPrefix $src "data:") (findRE `^[a-z]+://` $src 1)) -}}
   {{- $lookup := strings.TrimPrefix "/" $src -}}
@@ -39,11 +47,17 @@
   {{- $attrs = merge $attrs (dict "src" $res.RelPermalink "width" $res.Width "height" $res.Height) -}}
 {{- end -}}
 {{- $img := "<img" -}}
-{{- range $k := slice "src" "alt" "class" "width" "height" "loading" "fetchpriority" "decoding" -}}
+{{- $order := slice "src" "alt" "class" "width" "height" "loading" "fetchpriority" "decoding" -}}
+{{- range $k := $order -}}
   {{- with index $attrs $k -}}
     {{- $img = printf `%s %s="%s"` $img $k (. | string | htmlEscape) -}}
   {{- else -}}
     {{- if eq $k "alt" }}{{ $img = printf `%s alt=""` $img }}{{ end -}}
+  {{- end -}}
+{{- end -}}
+{{- range $k, $v := $attrs -}}
+  {{- if not (in $order $k) -}}
+    {{- $img = printf `%s %s="%s"` $img $k ($v | string | htmlEscape) -}}
   {{- end -}}
 {{- end -}}
 {{- $img = printf "%s>" $img -}}

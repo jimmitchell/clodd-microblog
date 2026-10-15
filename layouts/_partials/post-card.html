@@ -57,7 +57,7 @@
         </footer>
 
         {{- else }}
-        {{- $body := partial "photo-content.html" (dict "page" $p "kind" $kind) }}
+        {{- $body := partial "body.html" (dict "page" $p "kind" $kind "eager" $.lead) }}
         {{- if strings.TrimSpace $body }}
         <div class="post-card__body prose e-content">{{ $body | safeHTML }}</div>
         {{- end }}

@@ -2,7 +2,7 @@
 
 The public theme of [Clodd CMS](https://github.com/jimmitchell/clodd-cms), ported to Hugo. It's a personal site built around three kinds of post (articles, notes and photos), marked up for the IndieWeb.
 
-> **Status: in development.** Pages, IndieWeb markup, search, feeds and share cards work. The image render hook, code blocks and embed shortcodes are next. See [docs/PLAN.md](docs/PLAN.md) for what's done and what's next.
+> **Status: in development.** The theme is complete; the next step is switching jimmitchell.github.io over to it. See [docs/PLAN.md](docs/PLAN.md) for what's done and what's next.
 
 ## Features
 
@@ -16,8 +16,9 @@ The public theme of [Clodd CMS](https://github.com/jimmitchell/clodd-cms), porte
 - Self-hosted DM Sans, with critical CSS inlined.
 - **Search** with [Pagefind], from an overlay or a results page.
 - An archive by year and month, a photos grid, and a random-post page.
-- Lightbox, code copy buttons and `xcode-dark` syntax highlighting.
-- **Shortcodes:** a Mondrian-style `gallery`, plus privacy-friendly `youtube`, `vimeo`, `gist`, `mastodon`, `instagram`, `tweet` and `linkedin` embeds.
+- **Images** with WebP sources, dimensions and lazy loading, whether written in Markdown or as HTML, and a lightbox for every picture.
+- Code blocks in Clodd's `xcode-dark` colours, with copy buttons.
+- **Shortcodes:** a Mondrian-style `gallery`, privacy-friendly `youtube`, `vimeo`, `gist`, `mastodon`, `instagram`, `tweet` and `linkedin` embeds, and a `subscribe` form.
 - A generated Open Graph card for articles without a picture, JSON-LD `BlogPosting`, and a 404 page that offers the Wayback Machine's copy.
 - **Optional extras:** [Tinylytics] with a Kudos button, an Email reply pill, and an EmailOctopus signup form.
 
@@ -188,7 +189,7 @@ Search is [Pagefind]: the index is built from the finished site, so it searches 
    ---
    ```
 
-   A page whose body is the `{{</* search */>}}` shortcode works too.
+   A page whose body is the `{{< search >}}` shortcode works too.
 
 2. Index the site after Hugo builds it:
 
@@ -209,6 +210,55 @@ Each one is switched on by a content file:
 | Random | `content/random.md` with `layout: random` | Sends the visitor to a random post |
 
 Add them to `menus.main` to put them in the header.
+
+## Images and code
+
+A Markdown image, or an `<img>` written as HTML with a site-relative `src`, becomes what Clodd draws: for a JPEG or PNG Hugo can read (a page resource, or under `assets/`, which `static/media` can be mounted into), a `<picture>` with 800px and full-size WebP sources. The `<img>` keeps the original file and gets its width and height, so the page doesn't jump as pictures load. Everything is lazy except the picture that paints largest: the first one on a photo post's page, on an article that opens with a picture, and on the home page's first card. An HTML `<img>` keeps every attribute its author wrote. One that already has a `srcset`, or sits in a `<picture>`, is left alone.
+
+Pictures in a post open in the lightbox, unless they're inside a link.
+
+Fenced code is highlighted by Hugo's Chroma with classes, coloured with Clodd's `xcode-dark` palette, and dark in both themes. Every block gets a copy button. A block with no language stays plain text in the same dark box.
+
+## Shortcodes
+
+| Shortcode | Example |
+|---|---|
+| `gallery` | `{{< gallery "/media/a.jpg" "/media/b.jpg" />}}` |
+| `youtube` | `{{< youtube dQw4w9WgXcQ >}}` or `id="…"` |
+| `vimeo` | `{{< vimeo 76979871 >}}` or `id="…"` |
+| `gist` | `{{< gist url="https://gist.github.com/user/abc123" file="x.go" >}}`, or Hugo's `{{< gist user abc123 >}}` |
+| `mastodon` | `{{< mastodon url="https://instance/@user/123" >}}` |
+| `instagram` | `{{< instagram url="https://www.instagram.com/p/ABC/" >}}`, or Hugo's `{{< instagram ABC >}}` |
+| `tweet` | `{{< tweet url="https://x.com/user/status/123" >}}`, or `user="…" id="…"` |
+| `linkedin` | `{{< linkedin urn="urn:li:share:123" >}}` |
+| `subscribe` | `{{< subscribe >}}`, the newsletter form, for a page written around it |
+| `search` | `{{< search >}}`, see [Search](#search) |
+
+The video shortcodes replace Hugo's own, so posts written for those keep working.
+- **YouTube** plays from `youtube-nocookie.com`.
+- **Vimeo** gets `dnt=1`.
+- **Gists** load GitHub's static page in a sandboxed frame, so no GitHub script runs on the page.
+- **Mastodon** loads the instance's `embed.js`, which sizes the frame to fit the post.
+- **Instagram and X** show a link card that their own scripts turn into the embed.
+
+Each script appears once per page however many embeds use it. A shortcode with a malformed ID or URL draws nothing.
+
+### Galleries
+
+A gallery crops its pictures into a fixed layout for each count from one to seven. Eight or more are split into blocks: 11 becomes 6 and 5, and 15 or more go in sixes. The lightbox steps through all of them in order. There are three ways to list the pictures, and they can be mixed:
+
+```md
+{{< gallery "/media/2026/10/a.jpg" "/media/2026/10/b.jpg" />}}
+
+{{< gallery >}}
+![The harbour at dusk](/media/2026/10/a.jpg)
+![Boats](/media/2026/10/b.jpg)
+{{< /gallery >}}
+
+{{< gallery match="images/*" />}}
+```
+
+The first form names files by path. The second gives each picture alt text, and the third takes a page bundle's own images. Without inner content the tag has to close itself with `/>`. A picture without alt text is described by its file name, as in Clodd.
 
 ## Post kinds
 

@@ -1,0 +1,16 @@
+{{- /* {{< tweet url="https://x.com/user/status/123" >}}, as Clodd's [tweet]
+       (twitter.com URLs too), or {{< tweet user="user" id="123" >}}: a card
+       linking to the post, which X's widgets.js turns into the embed.
+       body.html keeps one copy of the script per page. */ -}}
+{{- $url := "" -}}
+{{- if .IsNamedParams -}}
+  {{- $url = .Get "url" | default "" -}}
+  {{- with and (.Get "user") (.Get "id") }}{{ $url = printf "https://x.com/%s/status/%s" ($.Get "user") ($.Get "id") }}{{ end -}}
+{{- else -}}
+  {{- $url = .Get 0 | default "" -}}
+{{- end -}}
+{{- $url = strings.TrimSpace $url -}}
+{{- if findRE `(?i)^https://(?:twitter|x)\.com/[^/]+/status/\d+` $url 1 -}}
+<blockquote class="twitter-tweet"><a href="{{ $url }}">View on X / Twitter</a></blockquote>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+{{- end -}}

@@ -1,0 +1,16 @@
+{{- /* {{< instagram url="https://www.instagram.com/p/ABC123/" >}}, as Clodd's
+       [instagram], or Hugo's {{< instagram ABC123 >}}: a card linking to the
+       post, which Instagram's embed.js turns into the embed. body.html keeps
+       one copy of the script per page. */ -}}
+{{- $url := "" -}}
+{{- if .IsNamedParams -}}
+  {{- $url = .Get "url" | default "" -}}
+{{- else -}}
+  {{- $url = .Get 0 | default "" -}}
+  {{- if not (strings.HasPrefix $url "https://") }}{{ $url = printf "https://www.instagram.com/p/%s/" $url }}{{ end -}}
+{{- end -}}
+{{- $url = strings.TrimSpace $url -}}
+{{- if findRE `(?i)^https://(?:www\.)?instagram\.com/p/[A-Za-z0-9_-]+` $url 1 -}}
+<blockquote class="instagram-media embed-card" data-instgrm-permalink="{{ $url }}" data-instgrm-version="14"><a href="{{ $url }}">View on Instagram</a></blockquote>
+<script async defer src="https://www.instagram.com/embed.js"></script>
+{{- end -}}

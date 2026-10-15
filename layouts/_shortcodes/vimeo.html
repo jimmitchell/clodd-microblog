@@ -1,0 +1,9 @@
+{{- /* {{< vimeo VIDEO_ID >}} or {{< vimeo id="VIDEO_ID" >}}, as Clodd's
+       [vimeo]: Vimeo's player with dnt=1, so it sets no tracking cookies.
+       Replaces Hugo's own vimeo shortcode. */ -}}
+{{- $id := "" -}}
+{{- if .IsNamedParams }}{{ $id = .Get "id" }}{{ else }}{{ $id = .Get 0 }}{{ end -}}
+{{- $id = strings.TrimSpace (string $id) -}}
+{{- if findRE `^\d+$` $id 1 -}}
+<div class="embed-video"><iframe src="https://player.vimeo.com/video/{{ $id }}?dnt=1" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="{{ (cond .IsNamedParams (.Get "title") "") | default "Vimeo video" }}"></iframe></div>
+{{- end -}}

@@ -1,0 +1,68 @@
+{{- /* Clodd's tiled [gallery]: pictures cropped into a fixed Mondrian layout
+       for each count from one to seven, each opening in the lightbox. Clodd
+       names pictures by media-library ID; here they're paths, in any of
+       three forms, which can be mixed:
+
+         {{< gallery "/media/2026/10/a.jpg" "/media/2026/10/b.jpg" />}}
+
+         {{< gallery >}}
+         ![The harbour at dusk](/media/2026/10/a.jpg)
+         ![Boats](/media/2026/10/b.jpg)
+         {{< /gallery >}}
+
+         {{< gallery match="images/*" />}}   (the page's own resources)
+
+       Without inner content the tag must self-close (/>), because Hugo
+       expects a closing tag for any shortcode that reads .Inner. The
+       Markdown form carries alt text; otherwise each picture is
+       described by its file name, as in Clodd. Eight or more pictures are
+       split into sibling blocks of up to seven (11 → 6 + 5); the lightbox
+       groups by post, so they still step as one sequence. */ -}}
+{{- $items := slice -}}
+{{- if .IsNamedParams -}}
+  {{- with .Get "match" -}}
+    {{- range $.Page.Resources.Match . -}}
+      {{- if eq .ResourceType "image" }}{{ $items = $items | append (dict "src" .RelPermalink "alt" "") }}{{ end -}}
+    {{- end -}}
+  {{- end -}}
+{{- else -}}
+  {{- range .Params }}{{ $items = $items | append (dict "src" . "alt" "") }}{{ end -}}
+{{- end -}}
+{{- with .Inner -}}
+  {{- range findRESubmatch `!\[([^\]]*)\]\(\s*<?([^)\s>]+)>?(?:\s+"[^"]*")?\s*\)` . -1 -}}
+    {{- $items = $items | append (dict "src" (index . 2) "alt" (index . 1)) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* Clodd's chunking: 1–7 in one block; 8–14 in two, the first the larger;
+       15 and up in sixes, until seven or fewer are left. */ -}}
+{{- $n := len $items -}}
+{{- $sizes := slice $n -}}
+{{- if gt $n 14 -}}
+  {{- $sixes := math.Ceil (div (sub $n 7) 6.0) | int -}}
+  {{- $sizes = slice -}}
+  {{- range seq $sixes }}{{ $sizes = $sizes | append 6 }}{{ end -}}
+  {{- $sizes = $sizes | append (sub $n (mul $sixes 6)) -}}
+{{- else if gt $n 7 -}}
+  {{- $first := math.Ceil (div $n 2.0) | int -}}
+  {{- $sizes = slice $first (sub $n $first) -}}
+{{- end -}}
+
+{{- $areas := split "abcdefg" "" -}}
+{{- $start := 0 -}}
+{{- if $n -}}
+{{- range $sizes -}}
+  {{- $chunk := first . (after $start $items) -}}
+  {{- $start = add $start . }}
+<div class="gallery gallery--tiles-{{ . }}">
+  {{- range $i, $item := $chunk -}}
+    {{- $src := $item.src -}}
+    {{- $href := $src -}}
+    {{- $lookup := strings.TrimPrefix "/" $src -}}
+    {{- with or ($.Page.Resources.Get $lookup) (resources.Get $lookup) }}{{ $href = .RelPermalink }}{{ end -}}
+    {{- $alt := $item.alt | default (path.Base $src | strings.TrimSuffix (path.Ext $src)) }}
+  <a href="{{ $href }}" class="gallery__item" data-gallery-item style="grid-area:{{ index $areas $i | safeCSS }}">{{ partial "image.html" (dict "page" $.Page "src" $src "alt" $alt "sizes" "(max-width: 44rem) 66vw, 30rem") }}</a>
+  {{- end }}
+</div>
+{{- end -}}
+{{- end -}}

@@ -54,7 +54,12 @@
     {{- end }}
 
     <div class="post__content prose e-content">
-        {{ partial "photo-content.html" (dict "page" . "kind" $kind) | safeHTML }}
+        {{- /* The body's first picture is what paints largest on a photo post,
+               and on an article that opens with one but has no stored
+               featured image. */}}
+        {{- $featured := partial "featured.html" . }}
+        {{- $eager := or (eq $kind "photo") (and $featured (not $featured.stored)) }}
+        {{ partial "body.html" (dict "page" . "kind" $kind "eager" $eager) | safeHTML }}
     </div>
 
     {{- $email := $author.email | default "" }}

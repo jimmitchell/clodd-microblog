@@ -1,0 +1,10 @@
+{{- /* {{< youtube VIDEO_ID >}} or {{< youtube id="VIDEO_ID" >}}, as Clodd's
+       [youtube]: the privacy-enhanced youtube-nocookie.com player, lazy, in
+       a 16:9 box. Takes the place of Hugo's own youtube shortcode, so
+       existing posts keep working. Nothing is drawn for a malformed ID. */ -}}
+{{- $id := "" -}}
+{{- if .IsNamedParams }}{{ $id = .Get "id" }}{{ else }}{{ $id = .Get 0 }}{{ end -}}
+{{- $id = strings.TrimSpace (string $id) -}}
+{{- if findRE `^[A-Za-z0-9_-]{11}$` $id 1 -}}
+<div class="embed-video"><iframe src="https://www.youtube-nocookie.com/embed/{{ $id }}" loading="lazy" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" title="{{ (cond .IsNamedParams (.Get "title") "") | default "YouTube video" }}"></iframe></div>
+{{- end -}}

@@ -1,0 +1,18 @@
+{{- /* A Markdown image, drawn as Clodd's ImageRenderer draws one: through
+       image.html, so a JPEG or PNG Hugo can read becomes a <picture> with
+       WebP sources, dimensions and lazy loading. Theme.js opens it in the
+       lightbox unless it sits inside a link.
+
+       Kept deliberately simple. It must not ask for the post's kind
+       (post-kind.html renders .Content, which would render this hook
+       again); body.html makes the lead picture eager afterwards. */ -}}
+{{- $attrs := dict -}}
+{{- with .Title }}{{ $attrs = merge $attrs (dict "title" .) }}{{ end -}}
+{{- range $k, $v := .Attributes }}{{ $attrs = merge $attrs (dict $k $v) }}{{ end -}}
+{{- partial "image.html" (dict
+      "page" .PageInner
+      "src" .Destination
+      "alt" .PlainText
+      "sizes" "(max-width: 44rem) 100vw, 44rem"
+      "attrs" $attrs) -}}
+{{- /**/ -}}

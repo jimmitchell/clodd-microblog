@@ -1,0 +1,20 @@
+{{- /* {{< gist url="https://gist.github.com/USER/ID" file="name.go" >}}, as
+       Clodd's [gist], or Hugo's positional form {{< gist USER ID [FILE] >}}.
+       GitHub's static .pibb page in a sandboxed iframe, so the page runs no
+       script from GitHub. */ -}}
+{{- $url := "" -}}
+{{- $file := "" -}}
+{{- if .IsNamedParams -}}
+  {{- $url = .Get "url" | default "" -}}
+  {{- $file = .Get "file" | default "" -}}
+  {{- with and (.Get "user") (.Get "id") }}{{ $url = printf "https://gist.github.com/%s/%s" ($.Get "user") ($.Get "id") }}{{ end -}}
+{{- else -}}
+  {{- with .Get 1 }}{{ $url = printf "https://gist.github.com/%s/%s" ($.Get 0) . }}{{ end -}}
+  {{- $file = .Get 2 | default "" -}}
+{{- end -}}
+{{- $url = strings.TrimSpace $url -}}
+{{- if findRE `(?i)^https://gist\.github\.com/[A-Za-z0-9_-]+/[a-f0-9]+$` $url 1 -}}
+{{- $src := printf "%s.pibb" $url -}}
+{{- with $file }}{{ $src = printf "%s?file=%s" $src (. | urlquery) }}{{ end -}}
+<div class="embed-gist"><iframe src="{{ $src }}" loading="lazy" sandbox="allow-scripts allow-same-origin" title="GitHub Gist"></iframe></div>
+{{- end -}}

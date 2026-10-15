@@ -1,0 +1,85 @@
+{{- /* A post's rendered body, finished the way Clodd's Builder finishes one.
+       Arguments (a dict):
+         page  — the post
+         kind  — its post-kind.html
+         eager — true when the body's first picture is the Largest Contentful
+                 Paint element: a photo post's page, an article whose lead
+                 picture is in its body, the lead card on the home page
+
+       1. Raw <img> tags written as HTML (imported posts have them) get what
+          the render hook gives a Markdown image: WebP sources and
+          dimensions (Clodd's ResponsiveImages::upgrade). Tags already in a
+          <picture>, with their own srcset, or not local are left alone, and
+          every attribute the author wrote is kept.
+       2. On a photo post every <img> gets u-photo. Microformats parsers read
+          a photo post's type from its u-photo, and here the pictures live in
+          the body (Micropub and Micro.blog both put them there) rather than
+          in a field of their own.
+       3. With eager, the first <img> loads eagerly at high priority
+          (Clodd's promoteFirstImage).
+       4. An embed script that several embeds brought along (X, Instagram, a
+          Mastodon instance) is kept once, at the end, as Clodd does. */ -}}
+{{- $page := .page -}}
+{{- $html := string $page.Content -}}
+
+{{- /* 1. Set the <picture>s aside so their <img>s aren't touched. */ -}}
+{{- $pictures := findRE `(?s)<picture\b.*?</picture>` $html -}}
+{{- range $i, $pic := $pictures -}}
+  {{- $html = replace $html $pic (printf "\x00picture%d\x00" $i) -}}
+{{- end -}}
+{{- $attrRE := "([a-zA-Z_:][\\w:.-]*)(?:\\s*=\\s*(?:\"([^\"]*)\"|'([^']*)'|([^\\s\"'=<>`]+)))?" -}}
+{{- range uniq (findRE `<img\b[^>]*>` $html) -}}
+  {{- $tag := . -}}
+  {{- $attrs := dict -}}
+  {{- range findRESubmatch $attrRE (strings.TrimSuffix ">" (strings.TrimSuffix "/>" (strings.TrimPrefix "<img" $tag))) -1 -}}
+    {{- $value := or (index . 2) (index . 3) (index . 4) -}}
+    {{- $attrs = merge $attrs (dict (lower (index . 1)) ($value | htmlUnescape)) -}}
+  {{- end -}}
+  {{- $src := $attrs.src | default "" -}}
+  {{- if and (strings.HasPrefix $src "/") (not (strings.HasPrefix $src "//")) (not (isset $attrs "srcset")) -}}
+    {{- $rest := dict -}}
+    {{- range $k, $v := $attrs -}}
+      {{- if not (in (slice "src" "alt" "class" "width" "height") $k) }}{{ $rest = merge $rest (dict $k $v) }}{{ end -}}
+    {{- end -}}
+    {{- $new := partial "image.html" (dict "page" $page "src" $src "alt" ($attrs.alt | default "") "class" ($attrs.class | default "") "sizes" "(max-width: 44rem) 100vw, 44rem" "attrs" $rest) -}}
+    {{- /* Only when Hugo could read the file; otherwise the author's tag,
+           with its own width and height, is the better one. */ -}}
+    {{- if strings.Contains $new "width=" -}}
+      {{- $html = replace $html $tag (string $new) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- range $i, $pic := $pictures -}}
+  {{- $html = replace $html (printf "\x00picture%d\x00" $i) $pic -}}
+{{- end -}}
+
+{{- /* 2. u-photo on a photo post's pictures. */ -}}
+{{- if eq .kind "photo" -}}
+  {{- range uniq (findRE `<img\b[^>]*>` $html) -}}
+    {{- $tag := . -}}
+    {{- $new := "" -}}
+    {{- if findRE `\sclass="` $tag 1 -}}
+      {{- $new = replaceRE `(\sclass=")` "${1}u-photo " $tag 1 -}}
+    {{- else -}}
+      {{- $new = replaceRE `^<img\b` `<img class="u-photo"` $tag 1 -}}
+    {{- end -}}
+    {{- $html = replace $html $tag $new -}}
+  {{- end -}}
+{{- end -}}
+
+{{- /* 3. The lead picture loads first. */ -}}
+{{- if .eager -}}
+  {{- with findRE `<img\b[^>]*>` $html 1 -}}
+    {{- $tag := index . 0 -}}
+    {{- $new := replaceRE `\s(?:loading|decoding|fetchpriority)="[^"]*"` "" $tag -}}
+    {{- $new = replaceRE `\s*/?>$` ` loading="eager" decoding="sync" fetchpriority="high">` $new -}}
+    {{- $html = replace $html $tag $new 1 -}}
+  {{- end -}}
+{{- end -}}
+{{- /* 4. One copy of each embed script. */ -}}
+{{- range uniq (findRE `<script\b[^>]*></script>` $html) -}}
+  {{- if gt (strings.Count . $html) 1 -}}
+    {{- $html = printf "%s\n%s\n" (replace $html . "" | strings.TrimRight "\n ") . -}}
+  {{- end -}}
+{{- end -}}
+{{- return $html -}}

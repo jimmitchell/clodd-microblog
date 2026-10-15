@@ -69,16 +69,24 @@ How the Clodd CMS theme becomes a Hugo theme, and the decisions already made. Th
   - The share card is drawn with `images.Text`, `images.Mask` and `images.Overlay` in Clodd's sizes (its points ×4/3) and lands within a pixel of Clodd's card. Hugo can't measure text from a template, so the title size comes from its length, and titles over 250 characters are cut short. Articles only, after the post's own pictures; 19 of the site's posts get one.
   - Feed `<link>`s are written with printf so the `+` in each media type isn't escaped to `&#43;`.
   - Validated with the W3C Feed Validator: RSS and Atom valid, warnings only for the Byline namespace and the same markup Clodd's feeds carry.
-- [ ] **6. Markup.**
-  - Image render hook: lazy loading, dimensions, lightbox. Use `_partials/image.html`. On the lead card, load the first body image eagerly (Clodd's `promoteFirstImage`). Must not call `post-kind.html`, which renders `.Content` and would recurse.
-  - Code blocks: Chroma's `xcode-dark` style and the copy button.
-  - Shortcodes: `gallery` (Mondrian layouts for 1–7 images, larger sets split into blocks), `youtube`, `vimeo`, `gist`, `mastodon`, `instagram`, `tweet`, `linkedin`.
+- [x] **6. Markup.**
+  - The image render hook draws through `_partials/image.html`, which now also takes extra attributes (title, style, an author's class).
+  - `_partials/body.html` (was `photo-content.html`) finishes a post body as Clodd's Builder does:
+    - Upgrades raw HTML `<img>` tags (`ResponsiveImages::upgrade`). Imported posts have eight; all their attributes are kept.
+    - Adds `u-photo` on photo posts.
+    - Makes the lead picture eager (`promoteFirstImage`): a photo post's page, an article opening with a picture, the home page's lead card.
+    - Keeps one copy of each embed script.
+  - Code blocks use a render hook that wraps Chroma's inline-mode spans in Clodd's `.code-block--dark` markup. Chroma's classes get Clodd's `xcode-dark` colours in `clodd-hugo.css`. Clodd colours `hljs-` classes, which Chroma doesn't emit.
+  - Shortcodes take Clodd's attributes and Hugo's positional forms, so the site's existing `{{< youtube ID >}}` keeps working. `gallery` takes paths, inner Markdown images (for alt text) or `match=`; the path form must self-close because the shortcode reads `.Inner`. Added `subscribe`, which Clodd has and the plan missed.
+  - Departure: the Mastodon embed includes the instance's `embed.js` and `width="400"`. Clodd's bare iframe stays 150px tall.
+  - Tested in Chrome. Galleries of 3, 5 and 11 (6 + 5) tile correctly, and the lightbox steps through all 19 pictures in order. A real Mastodon post resized to fit. Code colours and copy buttons match.
+  - Tested against the real site: all 162 post-page images have dimensions, 155 are `<picture>`s, the four code posts and two YouTube posts render, feeds keep only absolute URLs, and microformats are unchanged.
 - [ ] **7. Site switchover** (on a branch of the site repo).
   - Install Go for Hugo modules (CI runners already have it).
   - Replace mnml and migrate the params.
   - Feeds: drop the site's `jsonfeed`/`feedxml` output formats and `outputs`, add `outputs: {_merge: shallow}`, and delete `layouts/home.*.xml`, `home.jsonfeed.json` and `_partials/home-rss.xml`.
   - Mount `static/images` into `assets/images` (as `static/media` already is), so the avatar is inlined in the header and drawn on share cards.
-  - Delete the overrides in `layouts/` that the theme now covers.
+  - Delete the overrides in `layouts/` that the theme now covers, including `_markup/render-image.html`, which would otherwise shadow the theme's hook.
   - Check that URLs are unchanged, then run lychee and mf2 validation.
 - [ ] **8. Micropub Worker.**
   - New properties: `in-reply-to`, `like-of`, `repost-of`, `bookmark-of`, `rsvp`, `syndication`, `featured`.
