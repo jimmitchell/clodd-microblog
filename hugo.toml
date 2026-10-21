@@ -4,29 +4,8 @@
   min = "0.158.0"
   extended = true
 
-# Feeds. RSS is Hugo's own format (/index.xml); Atom and JSON Feed are added
-# here. The home page and every category and tag get all three.
-[mediaTypes."application/atom+xml"]
-  suffixes = ["xml"]
-[mediaTypes."application/feed+json"]
-  suffixes = ["json"]
-
-[outputFormats.atom]
-  mediaType = "application/atom+xml"
-  baseName = "atom"
-  rel = "alternate"
-[outputFormats.jsonfeed]
-  mediaType = "application/feed+json"
-  baseName = "feed"
-  rel = "alternate"
-  isPlainText = true
-
-# Hugo only merges a theme's `outputs` into a site whose config opts in with
-# `outputs: {_merge: shallow}`; a site can instead list its outputs itself.
-# Without either, only RSS is written. See "Feeds" in README.md.
-[outputs]
-  home = ["html", "rss", "atom", "jsonfeed"]
-  term = ["html", "rss", "atom", "jsonfeed"]
+# Feeds and other outputs are Micro.blog's: its config.json lists them, and
+# the theme supplies templates for its RSS and JSON formats.
 
 # No [params]: Micro.blog writes a site's settings from plugin.json, and
 # _partials/settings.html applies the defaults, because an unticked box or a

@@ -1,0 +1,5 @@
+{{- /* The site's JSON Feed, at Micro.blog's /feed.json. Here as well as in
+       list.json.json because theme-blank's index.json, its home JSON feed,
+       would otherwise win for the home page. Named home.json, not
+       home.json.json: Hugo 0.158 ranks that below theme-blank's index.json. */ -}}
+{{- partial "feed/json.html" . | jsonify (dict "indent" "  " "noHTMLEscape" true) -}}

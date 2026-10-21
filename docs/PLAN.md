@@ -71,7 +71,13 @@ How the Clodd Hugo theme ([hugo-theme-clodd]) becomes a Micro.blog theme. This r
   - **Search** reads `/archive/index.json`, which `home.archivejson.json` now writes with every post's whole text (as mnml and Micro Search do) and a `_clodd` extension carrying each card's kind and date. `search.js` requires every word, ranks title matches first, cuts an excerpt around the first match with `<mark>`, and draws Clodd's cards. Pagefind is gone; its inert `data-pagefind-*` attributes stay in four templates, so merges from upstream don't conflict over them.
   - A Micro.blog page can't choose its layout, so the search and random pages are ordinary pages whose bodies are `{{< search >}}` and the new `{{< random >}}`. The search page is found by its URL, `/search/`, since Micro.blog names the file.
   - Checked in Chrome under `hugo server`: search results and marks, the archive's year filter across 2025 and 2026, the photo grid, and the lightbox's link back to each post.
-- [ ] **6. Feeds and share cards.** RSS and JSON Feed on Micro.blog's formats and paths; drop `rss_copies`. Share cards, if `images.Text` works on Micro.blog's build.
+- [x] **6. Feeds and share cards.**
+  - **RSS** is Clodd's at Micro.blog's `/feed.xml` and `/categories/<name>/feed.xml`. `home.rss.xml` lost the `rss_copies` loop, and `section.rss.xml` went, since Micro.blog gives sections no feeds.
+  - **JSON Feed** moved from Clodd's own `jsonfeed` format to Micro.blog's `json`: `list.json.json` for categories, and `home.json` for `/feed.json`. That one needs the shorter name, because Hugo 0.158 ranks `home.json.json` below theme-blank's legacy `index.json`.
+  - **guids carry over.** Micro.blog's feeds identify an item by its `guid` (`http://<user>.micro.blog/…`), not its permalink. Clodd's RSS (`isPermaLink="false"`) and JSON Feed ids now use it where a post has one, so switching themes doesn't make a subscribed reader see every recent post again.
+  - **Atom** is gone (`list.atom.xml`, `feed/atom.html`), with `hugo.toml`'s media types, output formats and outputs: Micro.blog's config decides those.
+  - W3C Feed Validator: the home and a category RSS feed are valid. The warnings are the Byline namespace, the self link (expected for pasted input), the embeds post's iframe, script and style (as in Clodd's feeds), and the footnote's `#fn:1`.
+  - **Share cards** need nothing more; whether `images.Text` runs in Micro.blog's build is the same open question as Hugo Pipes in phase 2.
 - [ ] **7. Release.** `icon.jpg`, README for Micro.blog, a test blog switched over, then submit to the theme directory.
 
 [hugo-theme-clodd]: https://github.com/jimmitchell/hugo-theme-clodd

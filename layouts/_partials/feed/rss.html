@@ -30,7 +30,13 @@
       <title>{{ . | plainify | htmlUnescape }}</title>
       {{- end }}
       <link>{{ .Permalink }}</link>
+      {{- /* Micro.blog's own feeds identify a post by its guid, so a reader
+             subscribed before the theme changed sees no item twice. */}}
+      {{- with .Params.guid }}
+      <guid isPermaLink="false">{{ . }}</guid>
+      {{- else }}
       <guid isPermaLink="true">{{ .Permalink }}</guid>
+      {{- end }}
       <pubDate>{{ .PublishDate.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</pubDate>
       {{- with $author }}
       <dc:creator>{{ . }}</dc:creator>

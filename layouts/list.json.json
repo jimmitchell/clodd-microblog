@@ -1,1 +1,2 @@
+{{- /* A category's JSON Feed, at Micro.blog's /categories/<name>/feed.json. */ -}}
 {{- partial "feed/json.html" . | jsonify (dict "indent" "  " "noHTMLEscape" true) -}}

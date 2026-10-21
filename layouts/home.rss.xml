@@ -1,9 +1,2 @@
-{{- /* The site's RSS feed at /index.xml, and the same feed again at each
-       path in params.feeds.rss_copies (/feed.xml and /feed.rss by default),
-       each copy naming its own URL as self. Only /index.xml is advertised. */ -}}
-{{- partial "feed/rss.html" (dict "page" . "self" (.OutputFormats.Get "rss").Permalink) }}
-{{- range site.Params.feeds.rss_copies }}
-  {{- $path := strings.TrimPrefix "/" . }}
-  {{- $xml := partial "feed/rss.html" (dict "page" $ "self" (absURL $path)) }}
-  {{- (resources.FromString $path (string $xml)).Publish }}
-{{- end }}
+{{- /* The site's RSS feed, at Micro.blog's /feed.xml. */ -}}
+{{- partial "feed/rss.html" (dict "page" . "self" (.OutputFormats.Get "rss").Permalink) -}}

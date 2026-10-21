@@ -5,8 +5,10 @@
 {{- $meta := partial "feed/meta.html" . -}}
 {{- $items := slice -}}
 {{- range partial "feed/pages.html" . -}}
+  {{- /* The id is Micro.blog's guid where there is one, as in its own
+         feeds, so no item reappears as new for a subscribed reader. */ -}}
   {{- $item := dict
-    "id" .Permalink
+    "id" (.Params.guid | default .Permalink)
     "url" .Permalink
     "content_html" (partial "feed/content.html" .)
     "date_published" (.PublishDate.Format "2006-01-02T15:04:05-07:00")
@@ -22,7 +24,7 @@
   "version" "https://jsonfeed.org/version/1.1"
   "title" $meta.title
   "home_page_url" $meta.link
-  "feed_url" (.OutputFormats.Get "jsonfeed").Permalink
+  "feed_url" (.OutputFormats.Get "json").Permalink
   "items" $items
 -}}
 {{- with $meta.description }}{{ $feed = merge $feed (dict "description" .) }}{{ end -}}
