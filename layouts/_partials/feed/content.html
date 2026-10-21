@@ -16,7 +16,7 @@
   {{- end -}}
 {{- end -}}
 {{- $html = printf "%s%s" $html .Content -}}
-{{- with site.Params.tinylytics.code -}}
+{{- with (partialCached "settings.html" site).tinylytics.code -}}
   {{- $pixel := printf "https://tinylytics.app/pixel/%s.gif?path=%s" . ($.RelPermalink | urlquery) -}}
   {{- $html = printf `%s<img src="%s" alt="" style="width:1px;height:1px;border:0;" />` $html $pixel -}}
 {{- end -}}

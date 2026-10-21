@@ -11,7 +11,7 @@
 {{- $p := .page -}}
 {{- $kind := partial "post-kind.html" $p -}}
 {{- $iso := $p.Date.UTC.Format "2006-01-02T15:04:05Z" -}}
-{{- $date := $p.Date | time.Format (site.Params.card_date_format | default "January 2, 2006") -}}
+{{- $date := $p.Date | time.Format (partialCached "settings.html" site).card_date_format -}}
 {{- $contexts := partial "contexts.html" $p -}}
 <article class="post-card h-entry post-card--{{ $kind }}">
     <div class="post-card__inner">

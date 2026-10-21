@@ -1,8 +1,8 @@
-{{- /* params.social.mastodon, which may be written as a handle
+{{- /* params.social_mastodon, which may be written as a handle
        (@user@instance) or a profile URL (https://instance/@user), resolved
        to both forms. Empty strings when unset or not recognisably either. */ -}}
 {{- $out := dict "url" "" "handle" "" -}}
-{{- with (site.Params.social | default dict).mastodon -}}
+{{- with (partialCached "settings.html" site).social.mastodon -}}
   {{- with findRESubmatch `^https://([^/]+)/@([^/@]+)/?$` . 1 -}}
     {{- $m := index . 0 -}}
     {{- $out = dict "url" (index $m 0) "handle" (printf "@%s@%s" (index $m 2) (index $m 1)) -}}

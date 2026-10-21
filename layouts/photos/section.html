@@ -6,7 +6,7 @@
        thumbnails open in the site's lightbox, which links back to each
        picture's post. Rendered for the `photos` section, so a site turns it
        on with content/photos/_index.md. */}}
-{{- $photosCat := lower (site.Params.photos_category | default "") }}
+{{- $photosCat := lower (partialCached "settings.html" site).photos_category }}
 {{- $mdImg := `!\[[^\]]*\]\(\s*<?([^)\s>]+)` }}
 {{- $htmlImg := `<img[^>]+src=["']([^"']+)["']` }}
 {{- $entries := slice }}

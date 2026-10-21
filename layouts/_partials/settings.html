@@ -1,0 +1,58 @@
+{{- /* The theme's settings, in the shape Clodd's templates use, read from
+       what Micro.blog puts in params: its own keys (author, about_me,
+       github_username, description, site_id) and the flat keys plugin.json
+       writes. Every template asks this partial rather than site.Params, so
+       the mapping lives in one place. Call it with partialCached.
+
+       A plugin.json box left unticked arrives as false and a blank field as
+       "", either of which would beat a default in hugo.toml, so the defaults
+       are applied here, and booleans are named so false is the default. */ -}}
+{{- $p := site.Params -}}
+{{- $author := $p.author | default dict -}}
+
+{{- $github := "" -}}
+{{- with $p.github_username }}{{ $github = printf "https://github.com/%s" . }}{{ end -}}
+
+{{- /* Micro.blog's default description is HTML ("Follow <a …>@you</a> on
+       Micro.blog."), so it is reduced to text. */ -}}
+{{- $description := $p.description | default "" | plainify | htmlUnescape | strings.TrimSpace -}}
+
+{{- /* Tinylytics belongs to its plug-in, which loads the script. site_id is
+       also Micro.blog's own blog ID, set on every site, so it only counts as
+       a Tinylytics code when the plug-in is installed. */ -}}
+{{- $tinylytics := dict "code" "" "kudos" false "events" false -}}
+{{- if templates.Exists "partials/tinylytics.html" -}}
+  {{- with $p.site_id -}}
+    {{- $tinylytics = dict "code" (string .) "kudos" ($p.show_kudos | default false) "events" false -}}
+  {{- end -}}
+{{- end -}}
+
+{{- return dict
+  "author" (dict
+    "name" ($author.name | default "")
+    "avatar" ($author.avatar | default "")
+    "username" ($author.username | default "")
+    "bio" ($p.about_me | default "")
+    "email" ($p.email | default ""))
+  "social" (dict
+    "mastodon" ($p.social_mastodon | default "")
+    "bluesky" ($p.social_bluesky | default "")
+    "pixelfed" ($p.social_pixelfed | default "")
+    "github" $github)
+  "description" $description
+  "date_format" ($p.date_format | default "January 2, 2006")
+  "card_date_format" ($p.card_date_format | default "January 2, 2006")
+  "show_reading_time" (not $p.hide_reading_time)
+  "share_cards" (not $p.hide_share_cards)
+  "show_conversation" (not $p.hide_conversation)
+  "photos_category" ($p.photos_category | default "Photos")
+  "home_intro" ($p.home_intro | default "")
+  "footer_text" ($p.footer_text | default "")
+  "google_site_verification" ($p.google_site_verification | default "")
+  "newsletter" (dict
+    "action" ($p.newsletter_action | default "")
+    "email_field" ($p.newsletter_email_field | default "email")
+    "label" ($p.newsletter_label | default "")
+    "hidden" dict)
+  "tinylytics" $tinylytics
+-}}

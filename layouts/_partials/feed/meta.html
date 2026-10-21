@@ -1,7 +1,7 @@
 {{- /* A feed's title, description and the page it belongs to. Clodd's
        wording: a category or tag feed is "<site> — Category: <name>". */ -}}
 {{- $title := site.Title -}}
-{{- $description := site.Params.description -}}
+{{- $description := (partialCached "settings.html" site).description -}}
 {{- if eq .Kind "term" -}}
   {{- $label := .Data.Singular | humanize -}}
   {{- $title = printf "%s — %s: %s" site.Title $label .Title -}}

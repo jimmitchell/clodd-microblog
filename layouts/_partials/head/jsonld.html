@@ -12,7 +12,7 @@
   "dateModified" (.Lastmod.UTC.Format "2006-01-02T15:04:05Z")
   "publisher" (dict "@type" "Organization" "name" site.Title "url" site.Home.Permalink)
 -}}
-{{- with site.Params.author.name }}
+{{- with (partialCached "settings.html" site).author.name }}
   {{- $data = merge $data (dict "author" (dict "@type" "Person" "name" . "url" site.Home.Permalink)) -}}
 {{- end }}
 {{- with partial "share-image.html" . }}

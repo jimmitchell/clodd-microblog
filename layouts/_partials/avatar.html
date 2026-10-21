@@ -7,7 +7,7 @@
        can be inlined. Anything else — a remote URL, a file in static/ —
        is used as written for both. */ -}}
 {{- $out := dict "url" "" "inline" "" -}}
-{{- with site.Params.author.avatar -}}
+{{- with (partialCached "settings.html" site).author.avatar -}}
   {{- if or (strings.HasPrefix . "http://") (strings.HasPrefix . "https://") -}}
     {{- $out = dict "url" . "inline" . -}}
   {{- else -}}

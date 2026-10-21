@@ -4,7 +4,7 @@
 {{- $p := .page -}}
 {{- $meta := partial "feed/meta.html" $p -}}
 {{- $pages := partial "feed/pages.html" $p -}}
-{{- $author := site.Params.author.name -}}
+{{- $author := (partialCached "settings.html" site).author.name -}}
 {{- $site := strings.TrimSuffix "/" site.Home.Permalink -}}
 {{- printf `<?xml version="1.0" encoding="utf-8"?>` | safeHTML }}
 <rss version="2.0" xmlns:byline="https://bylinespec.org/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -20,7 +20,7 @@
     <lastBuildDate>{{ (index .ByLastmod.Reverse 0).Lastmod.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</lastBuildDate>
     {{- end }}
     <generator>Hugo</generator>
-    {{- with and $author site.Params.author.email }}
+    {{- with and $author (partialCached "settings.html" site).author.email }}
     <managingEditor>{{ . }} ({{ $author }})</managingEditor>
     {{- end }}
     {{- partial "feed/byline.html" $p }}

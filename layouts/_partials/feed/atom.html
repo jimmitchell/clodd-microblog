@@ -4,7 +4,7 @@
 {{- $pages := partial "feed/pages.html" . -}}
 {{- $self := (.OutputFormats.Get "atom").Permalink -}}
 {{- $site := strings.TrimSuffix "/" site.Home.Permalink -}}
-{{- $author := site.Params.author.name -}}
+{{- $author := (partialCached "settings.html" site).author.name -}}
 {{- $updated := "1970-01-01T00:00:00Z" -}}
 {{- with $pages }}{{ $updated = (index .ByLastmod.Reverse 0).Lastmod.Format "2006-01-02T15:04:05-07:00" }}{{ end -}}
 {{- printf `<?xml version="1.0" encoding="utf-8"?>` | safeHTML }}
@@ -22,7 +22,7 @@
   <author>
     <name>{{ . }}</name>
     <uri>{{ $site }}</uri>
-    {{- with site.Params.author.email }}
+    {{- with (partialCached "settings.html" site).author.email }}
     <email>{{ . }}</email>
     {{- end }}
   </author>

@@ -1,7 +1,7 @@
 {{- /* Newsletter signup under articles, in Clodd's styling, posting
-       natively to whatever list provider params.newsletter.action names.
+       natively to whatever list provider params.newsletter_action names.
        Off unless that is set. See "Newsletter" in README.md. */ -}}
-{{- $n := site.Params.newsletter | default dict -}}
+{{- $n := (partialCached "settings.html" site).newsletter -}}
 {{- with $n.action }}
 {{- $feed := site.Home.OutputFormats.Get "rss" }}
 <form class="subscribe" id="subscribe" method="post" action="{{ . }}">

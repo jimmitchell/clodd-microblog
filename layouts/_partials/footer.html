@@ -1,6 +1,6 @@
 <footer class="site-footer">
     <div class="site-footer__inner">
-        {{- with site.Params.footer_text }}
+        {{- with (partialCached "settings.html" site).footer_text }}
         <span>{{ . | markdownify }}</span>
         {{- else }}
         <span>&copy; {{ now.Year }} {{ site.Title }}</span>

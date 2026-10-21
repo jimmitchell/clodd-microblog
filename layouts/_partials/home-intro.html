@@ -4,12 +4,13 @@
        and u-uid both resolve to the home page, which is what makes it
        representative. Without it the h-entry cards below have no author.
 
-       Copy comes from params.home_intro, else params.author.bio. Renders
-       nothing when there is no author name to introduce. */ -}}
-{{- $author := site.Params.author | default dict -}}
+       Copy comes from params.home_intro, else the Micro.blog bio
+       (params.about_me). Renders nothing when there is no author name to
+       introduce. */ -}}
+{{- $author := (partialCached "settings.html" site).author -}}
 {{- with $author.name }}
 {{- $name := . }}
-{{- $intro := site.Params.home_intro | default $author.bio | default "" }}
+{{- $intro := (partialCached "settings.html" site).home_intro | default $author.bio }}
 {{- $social := partial "social-links.html" (dict "names" true) | strings.TrimSpace }}
 <div class="home-intro h-card">
     <p class="home-intro__text">

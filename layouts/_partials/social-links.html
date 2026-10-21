@@ -14,7 +14,7 @@
                  (home page only; theme.css clips it so the row shows marks
                  alone, while a screen reader still hears the name). The
                  footer names its links with aria-label instead. */ -}}
-{{- $social := site.Params.social | default dict -}}
+{{- $social := (partialCached "settings.html" site).social -}}
 {{- $mastodon := (partialCached "mastodon.html" . "mastodon").url -}}
 {{- $links := slice
   (dict "key" "mastodon" "name" "Mastodon" "url" $mastodon "rel" "me noopener")

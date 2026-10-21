@@ -7,7 +7,7 @@
        Anything that comes out empty falls back to params.description. */ -}}
 {{- $d := "" -}}
 {{- if .IsHome -}}
-  {{- $d = site.Params.description -}}
+  {{- $d = (partialCached "settings.html" site).description -}}
 {{- else if eq .Kind "term" -}}
   {{- $d = .Description -}}
   {{- if not $d -}}
@@ -20,4 +20,4 @@
 {{- else -}}
   {{- $d = .Description | default (.Summary | plainify | htmlUnescape | strings.TrimSpace | truncate 160) -}}
 {{- end -}}
-{{- return (or $d site.Params.description "" | replaceRE `\s+` " " | strings.TrimSpace) -}}
+{{- return (or $d (partialCached "settings.html" site).description "" | replaceRE `\s+` " " | strings.TrimSpace) -}}

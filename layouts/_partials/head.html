@@ -1,6 +1,5 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-{{ partial "head/tinylytics.html" . }}
 <title>{{ partial "title.html" . }}</title>
 {{- with partial "description.html" . }}
 <meta name="description" content="{{ . }}">
@@ -10,7 +9,7 @@
 {{- end }}
 <link rel="sitemap" type="application/xml" href="{{ "sitemap.xml" | absURL }}">
 {{ partial "head/opengraph.html" . }}
-{{- with site.Params.google_site_verification }}{{ if $.IsHome }}
+{{- with (partialCached "settings.html" site).google_site_verification }}{{ if $.IsHome }}
 <meta name="google-site-verification" content="{{ . }}">
 {{- end }}{{ end }}
 {{- /* Roman face only: it sets essentially all the text on a page. The italic

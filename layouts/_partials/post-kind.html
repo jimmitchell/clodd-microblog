@@ -11,7 +11,7 @@
     {{- $kind = "article" -}}
   {{- else -}}
     {{- $kind = "note" -}}
-    {{- $photos := lower (site.Params.photos_category | default "") -}}
+    {{- $photos := lower (partialCached "settings.html" site).photos_category -}}
     {{- $cats := apply (.Params.categories | default slice) "lower" "." -}}
     {{- if or (and $photos (in $cats $photos)) (partial "leading-image.html" .) -}}
       {{- $kind = "photo" -}}

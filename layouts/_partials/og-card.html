@@ -13,7 +13,7 @@
        title too long for seven lines at the smallest size is cut short.
        Hugo wraps the words itself, so the guess only has to be close. */ -}}
 {{- $out := false -}}
-{{- if and (ne site.Params.share_cards false) (eq (partial "post-kind.html" .) "article") (in site.MainSections .Section) -}}
+{{- if and (partialCached "settings.html" site).share_cards (eq (partial "post-kind.html" .) "article") (in site.MainSections .Section) -}}
   {{- $base := resources.Get "clodd/og-base.png" -}}
   {{- $font := resources.Get "clodd/og-bold.ttf" -}}
   {{- $pad := 80 -}}
@@ -51,7 +51,7 @@
          Without an avatar it sits at the top-left corner of the padding. */ -}}
   {{- $nameX := $pad -}}
   {{- $nameY := sub $pad 13 -}}
-  {{- with site.Params.author.avatar -}}
+  {{- with (partialCached "settings.html" site).author.avatar -}}
     {{- if not (or (strings.HasPrefix . "http://") (strings.HasPrefix . "https://")) -}}
       {{- with resources.Get (strings.TrimPrefix "/" .) -}}
         {{- if and (eq .ResourceType "image") (ne .MediaType.SubType "svg") -}}

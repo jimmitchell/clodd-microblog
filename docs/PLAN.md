@@ -50,7 +50,12 @@ How the Clodd Hugo theme ([hugo-theme-clodd]) becomes a Micro.blog theme. This r
   - Category feed links are titled with the site name alone, as `microblog_head.html` writes them. Clodd added the term.
   - Tested with a stand-in plug-in in the test site: its partial, stylesheet and script appear on every page.
   - Still open: whether Hugo Pipes (`resources.Get`, `minify`, `fingerprint`, `images.Text`) runs in Micro.blog's build. It does locally on 0.158. Check on a test blog, and fall back to `static/` if not.
-- [ ] **3. Params.** Map every template to the table above. Plainify Micro.blog's HTML `description`.
+- [x] **3. Params.**
+  - `_partials/settings.html` reads Micro.blog's params and returns them in Clodd's shape (`author`, `social`, `newsletter`, `tinylytics`, and the flat keys), defaults applied. Every template asks it, through `partialCached`, instead of `site.Params`, so the table above lives in one file and the templates stay close to upstream's.
+  - `hugo.toml` has no `[params]` any more: a default there would lose to the `false` or `""` Micro.blog writes for an untouched field. That also ends the `rss_copies` default, so `/feed.xml` is written once and `/feed.rss` is gone.
+  - The description is plainified: `Follow @sam on Micro.blog.` in the meta description and RSS.
+  - Tinylytics: the theme's own loader is gone, since the plug-in loads the script (with its Kudos label). `site_id` counts as a Tinylytics code only when the plug-in's `tinylytics.html` exists, because Micro.blog sets `site_id` to the blog's own ID on every site. Clodd's `events` option has no plug-in equivalent and stays off.
+  - Tested both ways: the test config's values, and every box ticked, custom dates, a newsletter, and the real Tinylytics plug-in with Kudos. One script, a Kudos button and the feed pixel; no reading time, Email pill or share card; both date formats.
 - [ ] **4. Content.** Posts come from `where site.RegularPages "Type" "post"`. Year sections mean Newer/Older must walk the whole post list, not `InSection`. Syndication pills from `bluesky.url`. The avatar can't be inlined unless `resources.GetRemote` works there. The `replies` section, the `redirect` layout and `newsletter.html` (Micro.blog's newsletter template) are new.
 - [ ] **5. Archive, photos, search.** Archive and photos as Micro.blog's `archivehtml` and `photoshtml` layouts, at `/archive/` and `/photos/`. Search over `archive/index.json`. Random reads the same JSON.
 - [ ] **6. Feeds and share cards.** RSS and JSON Feed on Micro.blog's formats and paths; drop `rss_copies`. Share cards, if `images.Text` works on Micro.blog's build.

@@ -3,7 +3,7 @@
 {{- $kind := partial "post-kind.html" . -}}
 {{- $isNote := ne $kind "article" -}}
 {{- $canonical := .Permalink -}}
-{{- $author := site.Params.author | default dict -}}
+{{- $author := (partialCached "settings.html" site).author -}}
 {{- $wm := site.Params.webmentions | default dict -}}
 {{- $contexts := partial "contexts.html" . -}}
 {{- /* Pagefind indexes the article only, with its kind, title and date as
@@ -18,7 +18,7 @@
        search_exclude: true keeps a post out of search. */}}
 <article class="post{{ if $isNote }} post--note{{ end }}{{ if eq $kind "photo" }} post--photo{{ end }} h-entry"
          {{- if not .Params.search_exclude }} data-pagefind-body{{ end }}
-         {{- $date := .Date | time.Format (site.Params.date_format | default "January 2, 2006") }}
+         {{- $date := .Date | time.Format (partialCached "settings.html" site).date_format }}
          data-kind="{{ $kind }}" data-date="{{ $date }}" data-title="{{ .Title | default $date }}"
          data-pagefind-meta="kind[data-kind], date[data-date], title[data-title]">
     <header class="post__header">
@@ -27,9 +27,9 @@
         <a class="post__author p-author h-card" data-pagefind-ignore href="{{ site.Home.Permalink }}" rel="author">{{ $author.name | default site.Title }}</a>
         {{- end }}
         <time class="post__date dt-published" data-pagefind-ignore datetime="{{ .Date.UTC.Format "2006-01-02T15:04:05Z" }}">
-            <a class="u-url" href="{{ $canonical }}">{{ .Date | time.Format (site.Params.date_format | default "January 2, 2006") }}</a>
+            <a class="u-url" href="{{ $canonical }}">{{ .Date | time.Format (partialCached "settings.html" site).date_format }}</a>
         </time>
-        {{- if and (not $isNote) (ne site.Params.show_reading_time false) }}
+        {{- if and (not $isNote) (partialCached "settings.html" site).show_reading_time }}
         <span class="post__reading-time" data-pagefind-ignore>{{ partial "reading-time.html" . }} min read</span>
         {{- end }}
         {{- if ne (.Lastmod.Format "2006-01-02T15:04") (.Date.Format "2006-01-02T15:04") }}
@@ -63,7 +63,7 @@
     </div>
 
     {{- $email := $author.email | default "" }}
-    {{- $tiny := site.Params.tinylytics | default dict }}
+    {{- $tiny := (partialCached "settings.html" site).tinylytics }}
     {{- $kudos := and $tiny.code $tiny.kudos }}
     {{- $syndication := partial "syndication.html" . }}
     {{- if or $email $syndication $wm.domain $kudos }}

@@ -28,7 +28,7 @@
 {{- with $meta.description }}{{ $feed = merge $feed (dict "description" .) }}{{ end -}}
 {{- with site.Language.Locale }}{{ $feed = merge $feed (dict "language" .) }}{{ end -}}
 {{- $avatar := (partialCached "avatar.html" . "avatar").url -}}
-{{- with site.Params.author.name -}}
+{{- with (partialCached "settings.html" site).author.name -}}
   {{- $author := dict "name" . "url" site.Home.Permalink -}}
   {{- with $avatar }}{{ $author = merge $author (dict "avatar" .) }}{{ end -}}
   {{- $feed = merge $feed (dict "authors" (slice $author)) -}}
