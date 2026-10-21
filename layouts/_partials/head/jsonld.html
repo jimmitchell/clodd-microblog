@@ -1,6 +1,6 @@
 {{- /* BlogPosting structured data on posts. A note has no title, so its
        description stands in as the headline and the schema stays valid. */ -}}
-{{- if and .IsPage (in site.MainSections .Section) -}}
+{{- if and .IsPage (partial "is-entry.html" .) -}}
 {{- $description := partial "description.html" . -}}
 {{- $data := dict
   "@context" "https://schema.org"

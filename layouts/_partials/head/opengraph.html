@@ -7,7 +7,7 @@
 {{- $description := partial "description.html" . -}}
 {{- $image := partial "share-image.html" . -}}
 <meta property="og:site_name" content="{{ site.Title }}">
-<meta property="og:type" content="{{ if and .IsPage (in site.MainSections .Section) }}article{{ else }}website{{ end }}">
+<meta property="og:type" content="{{ if and .IsPage (partial "is-entry.html" .) }}article{{ else }}website{{ end }}">
 {{- with partial "canonical.html" . }}
 <meta property="og:url" content="{{ . }}">
 {{- end }}
@@ -19,7 +19,7 @@
 {{- $parts := split . "-" }}
 <meta property="og:locale" content="{{ index $parts 0 }}{{ with index $parts 1 }}_{{ upper . }}{{ end }}">
 {{- end }}
-{{- if and .IsPage (in site.MainSections .Section) }}
+{{- if and .IsPage (partial "is-entry.html" .) }}
 <meta property="article:published_time" content="{{ .PublishDate.Format "2006-01-02T15:04:05-07:00" }}">
 <meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05-07:00" }}">
 {{- end }}

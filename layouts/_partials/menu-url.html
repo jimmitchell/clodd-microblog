@@ -1,0 +1,6 @@
+{{- /* A menu entry's link. A Micro.blog page that only points elsewhere
+       carries the address as redirect_url, and the menu links straight to it
+       rather than through the page's redirect. */ -}}
+{{- $url := .URL -}}
+{{- with .Page }}{{ with .Params.redirect_url }}{{ $url = . }}{{ end }}{{ end -}}
+{{- return $url -}}

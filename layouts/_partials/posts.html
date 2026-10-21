@@ -1,0 +1,6 @@
+{{- /* The site's posts, for the home page, feeds, archive, photos, random
+       and Newer/Older. Micro.blog files posts in a section per year, so
+       Hugo's mainSections (the biggest section) would hold one year only;
+       they are found by the type Micro.blog gives them instead. Replies
+       (type "reply") stay out, as on Micro.blog. Call with partialCached. */ -}}
+{{- return where site.RegularPages "Type" "post" -}}

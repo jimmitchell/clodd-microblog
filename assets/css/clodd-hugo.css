@@ -1,6 +1,7 @@
 /* ── Clodd for Hugo — pages Clodd itself does not have ──────────────────────
-   The archive, the photos grid, the random-post page, and the parts of search
-   Pagefind adds. theme.css stays a verbatim copy of Clodd's stylesheet, so
+   The archive, the photos grid, the random-post page, the parts of search
+   Pagefind adds, and Micro.blog's conversation under posts. theme.css stays
+   a verbatim copy of Clodd's stylesheet, so
    these live here, in its tokens and idiom, and are appended to the deferred
    half: none of it styles the top of a post. */
 
@@ -193,3 +194,133 @@
 .syntax-hl :is(.cp, .nd)                                     { color: #dfdfe0; }
 .syntax-hl .gi                                               { color: #63da58; background: #1a3320; }
 .syntax-hl .gd                                               { color: #ff8170; background: #3d1a18; }
+
+/* ── Micro.blog conversation ──────────────────────────────────────────────── */
+/* Where Clodd shows webmentions, Micro.blog's conversation.js writes its
+   replies and reply form: the same section, heading and cards, mapped onto
+   its microblog_ classes. Hidden until the script has written something, as
+   .webmentions is until it loads; for a post Micro.blog doesn't know, it
+   writes nothing. */
+.conversation {
+    display: none;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.conversation:has(.microblog_conversation) { display: block; }
+
+/* A .wm-reply card: the author on the left, the time on the right, the text
+   across the card below them. */
+.microblog_post {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: .6rem .75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+    margin-bottom: .65rem;
+    transition: border-color .15s;
+}
+
+.microblog_post:hover { border-color: var(--color-border-hover); }
+
+.microblog_user {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    min-width: 0;
+}
+
+/* conversation.js sizes avatars inline at 20px; !important is the only way
+   past an inline style, and the .wm-avatar--sm size reads better. */
+.microblog_avatar {
+    width: 40px !important;
+    height: 40px !important;
+    max-width: none !important;
+    flex-shrink: 0;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--color-code-bg);
+}
+
+.microblog_fullname {
+    font-weight: 700;
+    font-size: .875rem;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Written after the text, so placed by hand. */
+.microblog_time { grid-area: 1 / 2; }
+
+.microblog_time a {
+    font-size: .8rem;
+    color: var(--color-muted);
+    text-decoration: none;
+}
+
+.microblog_time a:hover { color: var(--color-link); }
+
+.microblog_text {
+    grid-column: 1 / -1;
+    font-size: .9rem;
+    line-height: 1.55;
+    color: var(--color-text);
+    overflow-wrap: anywhere;
+}
+
+.microblog_text p { margin: 0; }
+.microblog_text p + p { margin-top: .6rem; }
+
+/* The reply form, in .wm-submit__form's type and controls. */
+.microblog_reply_form {
+    margin-top: 1.25rem;
+    font-size: .75rem;
+    color: var(--color-muted);
+}
+
+.microblog_reply_signin {
+    margin: 0 0 .375rem;
+    line-height: 1.5;
+}
+
+.microblog_reply_textarea { margin: 0 0 .375rem; }
+
+.microblog_reply_textarea textarea {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius);
+    background: var(--color-bg);
+    color: var(--color-text);
+    font: inherit;
+    font-size: 1rem;
+    padding: .5rem .75rem;
+    resize: vertical;
+    outline: none;
+    transition: border-color .15s;
+}
+
+.microblog_reply_textarea textarea:focus { border-color: var(--color-link); }
+.microblog_reply_textarea textarea:disabled { opacity: .6; }
+
+.microblog_reply_button { margin: 0; text-align: right; }
+
+.microblog_reply_button input {
+    background: var(--color-link);
+    color: var(--color-bg);
+    border: none;
+    border-radius: var(--radius);
+    padding: .5rem 1rem;
+    font: inherit;
+    font-size: .875rem;
+    cursor: pointer;
+    transition: background .15s;
+}
+
+.microblog_reply_button input:hover:not(:disabled) { background: color-mix(in srgb, var(--color-link) 90%, #000); }
+.microblog_reply_button input:disabled { opacity: .5; cursor: default; }

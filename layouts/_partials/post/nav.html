@@ -1,6 +1,6 @@
 {{- /* Newer and Older, across every post in the main sections. A note has
        no title to link with, so its date and time stand in. */ -}}
-{{- $posts := where site.RegularPages "Section" "in" site.MainSections -}}
+{{- $posts := partialCached "posts.html" site -}}
 {{- $newer := $posts.Next . -}}
 {{- $older := $posts.Prev . -}}
 {{- if or $newer $older }}

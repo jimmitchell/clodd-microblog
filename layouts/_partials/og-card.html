@@ -13,7 +13,7 @@
        title too long for seven lines at the smallest size is cut short.
        Hugo wraps the words itself, so the guess only has to be close. */ -}}
 {{- $out := false -}}
-{{- if and (partialCached "settings.html" site).share_cards (eq (partial "post-kind.html" .) "article") (in site.MainSections .Section) -}}
+{{- if and (partialCached "settings.html" site).share_cards (eq (partial "post-kind.html" .) "article") (partial "is-entry.html" .) -}}
   {{- $base := resources.Get "clodd/og-base.png" -}}
   {{- $font := resources.Get "clodd/og-bold.ttf" -}}
   {{- $pad := 80 -}}

@@ -10,7 +10,7 @@
 {{- $mdImg := `!\[[^\]]*\]\(\s*<?([^)\s>]+)` }}
 {{- $htmlImg := `<img[^>]+src=["']([^"']+)["']` }}
 {{- $entries := slice }}
-{{- range $p := where site.RegularPages "Section" "in" site.MainSections }}
+{{- range $p := partialCached "posts.html" site }}
   {{- $cats := apply ($p.Params.categories | default slice) "lower" "." }}
   {{- if or (and $photosCat (in $cats $photosCat)) (eq (partial "post-kind.html" $p) "photo") }}
     {{- $imgs := slice }}

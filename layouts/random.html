@@ -2,7 +2,7 @@
 {{- /* Sends the visitor to a random post. The list is written into the page
        at build time, so it needs no server. Use with `layout: random`. */}}
 {{- $urls := slice }}
-{{- range where site.RegularPages "Section" "in" site.MainSections }}
+{{- range partialCached "posts.html" site }}
   {{- $urls = $urls | append .RelPermalink }}
 {{- end }}
 <section class="page random-page">

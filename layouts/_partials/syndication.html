@@ -1,10 +1,12 @@
-{{- /* Front matter `syndication` (a URL or a list), each resolved to a pill
-       label by its shape: a Mastodon status (/@user/<id>), a Bluesky post, a
-       Pixelfed post (/p/<user>/<id>), or else its hostname. Returns a list of
-       dict url, label, key. */ -}}
+{{- /* Front matter `syndication` (a URL or a list) and Micro.blog's
+       `bluesky.url`, each resolved to a pill label by its shape: a Mastodon
+       status (/@user/<id>), a Bluesky post, a Pixelfed post
+       (/p/<user>/<id>), or else its hostname. Returns a list of dict url,
+       label, key. */ -}}
 {{- $out := slice -}}
 {{- $urls := .Params.syndication | default slice -}}
 {{- if reflect.IsSlice $urls | not }}{{ $urls = slice $urls }}{{ end -}}
+{{- with .Params.bluesky }}{{ with .url }}{{ $urls = $urls | append . }}{{ end }}{{ end -}}
 {{- range $urls -}}
   {{- $url := strings.TrimSpace (string .) -}}
   {{- if findRE `^https?://` $url 1 -}}

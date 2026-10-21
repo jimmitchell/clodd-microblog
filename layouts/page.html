@@ -1,5 +1,5 @@
 {{ define "main" }}
-{{- if in site.MainSections .Section }}
+{{- if partial "is-entry.html" . }}
 {{- partial "post/entry.html" . }}
 {{- else }}
 <section class="page"{{ if not .Params.search_exclude }} data-pagefind-body{{ end }}

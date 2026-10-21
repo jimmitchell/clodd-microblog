@@ -3,6 +3,6 @@
        Hugo keeps whichever paginator a page asks for first. */ -}}
 {{- $pages := .Pages -}}
 {{- if .IsHome -}}
-  {{- $pages = where site.RegularPages "Section" "in" site.MainSections -}}
+  {{- $pages = partialCached "posts.html" site -}}
 {{- end -}}
 {{- return .Paginate $pages -}}

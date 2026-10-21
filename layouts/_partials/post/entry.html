@@ -4,7 +4,6 @@
 {{- $isNote := ne $kind "article" -}}
 {{- $canonical := .Permalink -}}
 {{- $author := (partialCached "settings.html" site).author -}}
-{{- $wm := site.Params.webmentions | default dict -}}
 {{- $contexts := partial "contexts.html" . -}}
 {{- /* Pagefind indexes the article only, with its kind, title and date as
        metadata for the result cards, each read from a data- attribute
@@ -66,15 +65,7 @@
     {{- $tiny := (partialCached "settings.html" site).tinylytics }}
     {{- $kudos := and $tiny.code $tiny.kudos }}
     {{- $syndication := partial "syndication.html" . }}
-    {{- if or $email $syndication $wm.domain $kudos }}
-    {{- if $wm.domain }}
-    {{- /* A checkbox and a <label> pill rather than <details>/<summary>: a
-           <details> is one box, so its summary could sit in the pill row or its
-           content could span the measure, never both. Split into a checkbox
-           before the row and a form after it, the pill stays put and the form
-           still lines up with the article. */}}
-    <input type="checkbox" id="wm-submit-toggle" class="wm-submit__checkbox">
-    {{- end }}
+    {{- if or $email $syndication $kudos }}
     <footer class="post__syndication" data-pagefind-ignore="all">
         {{- with $email }}
         {{- $subject := cond $isNote (printf "Re: note from %s" ($.Date.Format "2006-01-02")) (printf "Re: %s" $.Title) }}
@@ -89,30 +80,10 @@
         <a href="{{ .url }}" class="u-syndication" target="_blank" rel="noopener noreferrer"
            data-tinylytics-event="syndication.open" data-tinylytics-event-value="{{ .key }}">{{ .label }}</a>
         {{- end }}
-        {{- if $wm.domain }}
-        <label class="wm-submit__toggle" for="wm-submit-toggle" data-tinylytics-event="webmention.open">Webmention</label>
-        {{- end }}
         {{- if $kudos }}
         <button class="tinylytics_kudos" data-path="{{ .RelPermalink }}"></button>
         {{- end }}
     </footer>
-    {{- with $wm.domain }}
-    {{- /* A real form posting cross-origin, not a JS-only widget: with JS off
-           the native POST still lands on webmention.io's own confirmation page.
-           The target is the same canonical URL #webmentions asks about below;
-           if the two ever drift, a mention is accepted against a URL this page
-           never queries and is invisible forever. */}}
-    <form class="wm-submit__form" data-pagefind-ignore="all" method="post" action="https://webmention.io/{{ . }}/webmention">
-        <input type="hidden" name="target" value="{{ $canonical }}">
-        <label class="wm-submit__label" for="wm-source">Written a response on your own site? Paste its URL and it&rsquo;ll show up here.</label>
-        <div class="wm-submit__row">
-            <input class="wm-submit__input" type="url" name="source" id="wm-source"
-                   required placeholder="https://" autocomplete="url" inputmode="url" spellcheck="false">
-            <button class="wm-submit__send" type="submit">Send</button>
-        </div>
-        <p class="wm-submit__status" role="status" aria-live="polite" hidden></p>
-    </form>
-    {{- end }}
     {{- end }}
 </article>
 
@@ -122,24 +93,15 @@
 {{- partial "newsletter.html" . }}
 {{- end }}
 
-{{- with $wm.domain }}
-{{- /* data-link-tags: query suffixes other sites add to links pointing here,
-       asked about alongside the canonical, since webmention.io stores a target
-       verbatim. data-legacy-urls: the same problem in time — every address
-       this post used to have (its aliases). Neither is ever the submit target
-       above, which has to be the live address. */}}
-{{- $tags := slice }}
-{{- range $wm.link_tags | default slice }}
-  {{- $t := strings.TrimLeft "?&" (strings.TrimSpace .) }}
-  {{- if and (findRE `^[A-Za-z0-9._~%+-]+=[A-Za-z0-9._~%+-]*$` $t 1) (not (in $tags $t)) }}{{ $tags = $tags | append $t }}{{ end }}
-{{- end }}
-{{- $legacy := slice }}
-{{- range $.Aliases }}{{ $legacy = $legacy | append (absURL .) }}{{ end }}
-<section class="webmentions" id="webmentions" data-url="{{ $canonical }}"
-         data-link-tags="{{ delimit $tags " " }}"
-         data-legacy-urls="{{ delimit $legacy " " }}">
-    <h2 class="webmentions__title">Webmentions</h2>
-    <div class="webmentions__body"></div>
+{{- if (partialCached "settings.html" site).show_conversation }}
+{{- /* Replies from Micro.blog, and its form for replying with a Micro.blog,
+       Mastodon or Bluesky account. conversation.js writes them in place with
+       document.write, so it has to stay a plain, parser-inserted script. It
+       writes nothing (a 404) for a post Micro.blog doesn't know, so the
+       section stays hidden until there's a .microblog_conversation in it. */}}
+<section class="conversation" id="conversation" data-pagefind-ignore="all">
+    <h2 class="webmentions__title">Replies</h2>
+    <script src="https://micro.blog/conversation.js?url={{ $canonical | urlquery }}"></script>
 </section>
 {{- end }}
 

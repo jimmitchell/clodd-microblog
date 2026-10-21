@@ -2,7 +2,7 @@
 {{- /* Every post, newest first, grouped by month, with the categories above
        and a year filter. Rendered for the `archive` section, so a site
        turns it on with content/archive/_index.md. */}}
-{{- $posts := where site.RegularPages "Section" "in" site.MainSections }}
+{{- $posts := partialCached "posts.html" site }}
 <div class="archive h-feed">
     <header class="taxonomy-archive__header">
         <h1 class="taxonomy-archive__title p-name">{{ .Title | default "Archive" }}</h1>

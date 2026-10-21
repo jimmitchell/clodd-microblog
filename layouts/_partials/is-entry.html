@@ -1,0 +1,4 @@
+{{- /* Whether a page is drawn as an h-entry: a post, or a reply. Replies are
+       entries on their own pages but are not listed with the posts; see
+       posts.html. */ -}}
+{{- return in (slice "post" "reply") .Type -}}
