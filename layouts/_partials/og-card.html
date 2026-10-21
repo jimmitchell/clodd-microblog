@@ -68,6 +68,9 @@
   {{- end -}}
 
   {{- $card := $base | images.Filter $filters -}}
-  {{- $out = resources.Copy (path.Join (strings.TrimPrefix "/" .RelPermalink) "og.png") $card -}}
+  {{- /* Micro.blog permalinks end in .html, so the card goes in a folder named
+         after the post rather than inside the post's own path. */ -}}
+  {{- $dir := strings.TrimSuffix ".html" (strings.TrimPrefix "/" .RelPermalink) -}}
+  {{- $out = resources.Copy (path.Join $dir "og.png") $card -}}
 {{- end -}}
 {{- return $out -}}

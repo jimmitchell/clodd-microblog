@@ -313,10 +313,11 @@ The theme ignores two more keys. A companion GitHub Action reads them to decide 
 ## Development
 
 ```sh
-hugo server -s exampleSite --themesDir ../..
+testSite/setup.sh
+testSite/.bin/hugo server -s testSite
 ```
 
-The example site has a post of every kind and every interaction type.
+The test site builds the way Micro.blog does, on Hugo 0.158 with Micro.blog's base theme underneath. See [testSite/README.md](testSite/README.md).
 
 ## Credits
 

@@ -1,0 +1,191 @@
+{
+  "title": "Clodd Test",
+  "author": {
+    "name": "Sam Example",
+    "avatar": "http://localhost:1313/uploads/avatar.png",
+    "username": "sam",
+    "activitypub": {
+      "username": "sam@example.micro.blog",
+      "url": "https://example.micro.blog/sam"
+    }
+  },
+  "baseURL": "http://localhost:1313/",
+  "mediaTypes": {
+    "application/json": {
+      "suffixes": [
+        "json"
+      ]
+    }
+  },
+  "outputFormats": {
+    "RSS": {
+      "baseName": "feed"
+    },
+    "JSON": {
+      "baseName": "feed"
+    },
+    "RSD": {
+      "mediaType": "application/xml",
+      "baseName": "rsd",
+      "isPlainText": true,
+      "notAlternative": true
+    },
+    "ArchiveHTML": {
+      "mediaType": "text/html",
+      "path": "archive",
+      "baseName": "index",
+      "isHTML": true,
+      "notAlternative": true
+    },
+    "ArchiveJSON": {
+      "mediaType": "application/json",
+      "path": "archive",
+      "baseName": "index",
+      "isPlainText": true,
+      "notAlternative": true
+    },
+    "PhotosHTML": {
+      "mediaType": "text/html",
+      "path": "photos",
+      "baseName": "index",
+      "isHTML": true,
+      "notAlternative": true
+    },
+    "PhotosJSON": {
+      "mediaType": "application/json",
+      "path": "photos",
+      "baseName": "index",
+      "isPlainText": true,
+      "notAlternative": true
+    },
+    "PodcastXML": {
+      "mediaType": "application/rss+xml",
+      "baseName": "podcast",
+      "isPlainText": true,
+      "notAlternative": true
+    },
+    "PodcastJSON": {
+      "mediaType": "application/json",
+      "baseName": "podcast",
+      "isPlainText": true,
+      "notAlternative": true
+    }
+  },
+  "outputs": {
+    "home": [
+      "HTML",
+      "RSS",
+      "JSON",
+      "RSD",
+      "ArchiveHTML",
+      "ArchiveJSON",
+      "PhotosHTML",
+      "PhotosJSON",
+      "PodcastXML",
+      "PodcastJSON"
+    ],
+    "page": [
+      "HTML"
+    ],
+    "section": [
+      "HTML"
+    ],
+    "taxonomy": [
+      "HTML",
+      "RSS",
+      "JSON"
+    ],
+    "term": [
+      "HTML",
+      "RSS",
+      "JSON"
+    ]
+  },
+  "taxonomies": {
+    "category": "categories"
+  },
+  "rssLimit": 25,
+  "uglyURLs": false,
+  "blackfriday": {
+    "fractions": false
+  },
+  "markup": {
+    "goldmark": {
+      "renderer": {
+        "unsafe": true
+      }
+    }
+  },
+  "enableRobotsTXT": true,
+  "languageCode": "en",
+  "defaultContentLanguage": "en",
+  "paginate": 25,
+  "pluralizeListTitles": false,
+  "params": {
+    "author": {
+      "name": "Sam Example",
+      "avatar": "http://localhost:1313/uploads/avatar.png",
+      "username": "sam",
+      "activitypub": {
+        "username": "sam@example.micro.blog",
+        "url": "https://example.micro.blog/sam"
+      }
+    },
+    "description": "Follow <a href=\"https://micro.blog/sam\">@sam on Micro.blog</a>.",
+    "about_me": "I write about the open web, photography and the occasional bike ride.",
+    "itunes_description": "I write about the open web, photography and the occasional bike ride.",
+    "itunes_category": "",
+    "itunes_subcategory": "",
+    "itunes_author": "Sam Example",
+    "itunes_email": "",
+    "itunes_cover": "",
+    "twitter_username": "",
+    "github_username": "example",
+    "instagram_username": "",
+    "site_id": "1234",
+    "paginate_home": false,
+    "paginate_categories": false,
+    "paginate_replies": false,
+    "theme_seconds": "0",
+    "plugins_css": [],
+    "plugins_js": [],
+    "plugins_html": [],
+    "feeds": {
+      "bookmarks_json": ""
+    },
+    "home_intro": "",
+    "date_format": "",
+    "card_date_format": "",
+    "hide_reading_time": false,
+    "photos_category": "",
+    "hide_share_cards": false,
+    "hide_conversation": false,
+    "email": "sam@example.org",
+    "social_mastodon": "@sam@mastodon.example",
+    "social_bluesky": "https://bsky.app/profile/sam.example.org",
+    "social_pixelfed": "",
+    "newsletter_action": "",
+    "newsletter_email_field": "",
+    "newsletter_label": "",
+    "footer_text": "",
+    "google_site_verification": ""
+  },
+  "theme": [
+    "clodd",
+    "theme-blank"
+  ],
+  "menu": {
+    "main": [
+      {
+        "name": "Archive",
+        "url": "/archive/",
+        "weight": 10
+      },
+      {
+        "name": "Photos",
+        "url": "/photos/",
+        "weight": 20
+      }
+    ]
+  }
+}

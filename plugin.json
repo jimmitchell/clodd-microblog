@@ -49,19 +49,19 @@
       "placeholder": "Shows an Email pill under posts. Leave blank to hide it."
     },
     {
-      "field": "params.mastodon",
+      "field": "params.social_mastodon",
       "label": "Mastodon",
       "type": "string",
       "placeholder": "@username@mastodon.instance (also used for fediverse:creator)"
     },
     {
-      "field": "params.bluesky",
+      "field": "params.social_bluesky",
       "label": "Bluesky",
       "type": "string",
       "placeholder": "Profile URL, e.g. https://bsky.app/profile/you.example.org"
     },
     {
-      "field": "params.pixelfed",
+      "field": "params.social_pixelfed",
       "label": "Pixelfed",
       "type": "string",
       "placeholder": "Profile URL"

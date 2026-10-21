@@ -11,10 +11,10 @@ How the Clodd Hugo theme ([hugo-theme-clodd]) becomes a Micro.blog theme. This r
 
   | Clodd | Micro.blog |
   |---|---|
-  | `author.name`, `author.avatar` | `.Site.Author.name`, `.Site.Author.avatar` |
+  | `author.name`, `author.avatar` | unchanged: Micro.blog sets `params.author.name`, `.avatar` and `.username` (`.Site.Author` is gone from Hugo) |
   | `author.bio` | `params.about_me` |
   | `author.email` | `params.email` |
-  | `social.mastodon`, `.bluesky`, `.pixelfed` | `params.mastodon`, `params.bluesky`, `params.pixelfed` |
+  | `social.mastodon`, `.bluesky`, `.pixelfed` | `params.social_mastodon`, `params.social_bluesky`, `params.social_pixelfed` |
   | `social.github` | `params.github_username` (Micro.blog's own) |
   | `show_reading_time`, `share_cards` | `hide_reading_time`, `hide_share_cards` (inverted) |
   | `newsletter.action`, `.email_field`, `.label` | `newsletter_action`, `newsletter_email_field`, `newsletter_label` |
@@ -30,13 +30,25 @@ How the Clodd Hugo theme ([hugo-theme-clodd]) becomes a Micro.blog theme. This r
 ## Phases
 
 - [x] **0. Fork.** `clodd-microblog` with full history; `plugin.json` and `theme.toml` for Micro.blog.
-- [ ] **1. Test site.** A local site shaped like Micro.blog's: the base theme's `config.json` with its outputs, `microblog-theme` and this theme as theme components, and posts with Micro.blog's front matter (`type: post`, `photos`, `photos_with_metadata`, `reply_to_url`, `bluesky`, the `replies` section). It replaces `exampleSite/`; `go.mod` goes too.
-- [ ] **2. Head and layout.** `microblog_head.html` in, Clodd's discovery and feed links out, `plugins_js`, `theme_seconds` cache-busting. Check on a test blog whether Hugo Pipes (`resources.Get`, `css`, fingerprinting) builds there; fall back to `static/` if not.
-- [ ] **3. Params.** Map every template to the table above.
-- [ ] **4. Content.** Posts come from `where site.RegularPages "Type" "post"`. Post kinds read Micro.blog's front matter: photos from `photos`, replies from `reply_to_url`. Year sections mean Newer/Older must walk the whole post list, not `InSection`. Uploaded images are remote, so the image partials must pass remote URLs through untouched. The avatar can't be inlined unless `resources.GetRemote` works there. The `replies` section, the `redirect` layout and `newsletter.html` (Micro.blog's newsletter template) are new.
+- [x] **1. Test site.** `testSite/`, replacing `exampleSite/` (and `go.mod`, since Micro.blog doesn't use modules). See its README.
+  - `setup.sh` fetches Hugo 0.158.0 (checksummed, expanded from the `.pkg` rather than installed) and [theme-blank] at a pinned commit. `config.json` is theme-blank's, filled in, with `theme: ["clodd", "theme-blank"]`.
+  - The current theme-blank reads the author from `params.author`, not `.Site.Author`, and its config has `ArchiveHTML` and `PhotosHTML` outputs that the older local `microblog-theme` copy lacks.
+  - Profile fields became `social_mastodon`, `social_bluesky` and `social_pixelfed`: a post's own `bluesky` key is its Bluesky copy, and `.Param` falls back from page to site.
+  - The first build failed: the share card was written inside the post's path, and a Micro.blog permalink ends in `.html`. The card now goes in a folder named after the post (`/2026/10/12/hello-clodd/og.png`).
+  - **Baseline**, with the theme otherwise unchanged: 41 pages, no errors. The only deprecation notices (`languageCode`) come from Micro.blog's config and theme-blank's feeds.
+    - Already working: post kinds (four articles, a note, two photo posts), replies kept off the home page, remote uploads passed through untouched with `u-photo` and eager loading, galleries of URLs, the menu from both config and page front matter, the share card and reading time on articles.
+    - No `microblog_head.html`, so no IndieAuth, Micropub, Webmention, `rel="me"`, `custom.css` or plug-ins (phase 2).
+    - Micro.blog's default `description` is HTML (`Follow <a …>@sam</a>`) and comes out escaped in the meta description and RSS (phase 3).
+    - A post's `bluesky.url` gets no syndication pill (phase 4).
+    - `/archive/` and `/photos/` are theme-blank's bare lists in Clodd's frame (phase 5).
+    - `/feed.json` is theme-blank's. `/feed.xml` is Clodd's, but `feeds.rss_copies` writes it a second time and adds a stray `/feed.rss` (phase 6).
+- [ ] **2. Head and layout.** `microblog_head.html` in, Clodd's discovery and feed links out, `plugins_js`, `theme_seconds` cache-busting. Hugo Pipes (`resources.Get`, `css`, fingerprinting, `images.Text`) builds locally; confirm on a test blog, and fall back to `static/` if Micro.blog's build refuses it.
+- [ ] **3. Params.** Map every template to the table above. Plainify Micro.blog's HTML `description`.
+- [ ] **4. Content.** Posts come from `where site.RegularPages "Type" "post"`. Year sections mean Newer/Older must walk the whole post list, not `InSection`. Syndication pills from `bluesky.url`. The avatar can't be inlined unless `resources.GetRemote` works there. The `replies` section, the `redirect` layout and `newsletter.html` (Micro.blog's newsletter template) are new.
 - [ ] **5. Archive, photos, search.** Archive and photos as Micro.blog's `archivehtml` and `photoshtml` layouts, at `/archive/` and `/photos/`. Search over `archive/index.json`. Random reads the same JSON.
-- [ ] **6. Feeds and share cards.** RSS and JSON Feed on Micro.blog's formats and paths. Share cards, if `images.Text` works on Micro.blog's build.
+- [ ] **6. Feeds and share cards.** RSS and JSON Feed on Micro.blog's formats and paths; drop `rss_copies`. Share cards, if `images.Text` works on Micro.blog's build.
 - [ ] **7. Release.** `icon.jpg`, README for Micro.blog, a test blog switched over, then submit to the theme directory.
 
 [hugo-theme-clodd]: https://github.com/jimmitchell/hugo-theme-clodd
 [Tinylytics plug-in]: https://github.com/jimmitchell/Tinylytics-for-Micro.blog
+[theme-blank]: https://github.com/microdotblog/theme-blank

@@ -1,6 +1,8 @@
 public/
 resources/_gen/
 .hugo_build.lock
-exampleSite/public/
-exampleSite/resources/
 .DS_Store
+testSite/.bin/
+testSite/themes/theme-blank/
+testSite/public/
+testSite/resources/
