@@ -78,7 +78,12 @@ How the Clodd Hugo theme ([hugo-theme-clodd]) becomes a Micro.blog theme. This r
   - **Atom** is gone (`list.atom.xml`, `feed/atom.html`), with `hugo.toml`'s media types, output formats and outputs: Micro.blog's config decides those.
   - W3C Feed Validator: the home and a category RSS feed are valid. The warnings are the Byline namespace, the self link (expected for pasted input), the embeds post's iframe, script and style (as in Clodd's feeds), and the footnote's `#fn:1`.
   - **Share cards** need nothing more; whether `images.Text` runs in Micro.blog's build is the same open question as Hugo Pipes in phase 2.
-- [ ] **7. Release.** `icon.jpg`, README for Micro.blog, a test blog switched over, then submit to the theme directory.
+- [ ] **7. Release.**
+  - [x] `icon.jpg`: Clodd CMS's clod logo at 256×256, the size of mnml's.
+  - [x] README rewritten for Micro.blog: installation, the settings, Tinylytics and the newsletter, the pages (search and random as shortcode pages), feeds, images, shortcodes, post kinds and share images.
+  - [ ] Install on a Micro.blog test blog, and check there what the test site can't: Hugo Pipes and `images.Text` in Micro.blog's build, the front matter the theme reads (`type = "redirect"` especially), how plug-in settings arrive (an unticked box as `false`, a blank field as `""`), and the installation steps in the README.
+  - [ ] Register the plug-in in Micro.blog's directory.
+  - Micro.blog's plug-in docs list `markdown`, `integer` and `color` field types besides `string` and `boolean`. Footer text and the newsletter's signup text could be `markdown` fields once it's clear how one arrives in params.
 
 [hugo-theme-clodd]: https://github.com/jimmitchell/hugo-theme-clodd
 [Tinylytics plug-in]: https://github.com/jimmitchell/Tinylytics-for-Micro.blog
