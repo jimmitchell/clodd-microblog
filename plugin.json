@@ -1,0 +1,100 @@
+{
+  "version": "0.1.0",
+  "title": "Clodd",
+  "description": "Notes, articles and photos, with microformats2, Byline feeds, share cards and a three-way light/dark toggle.",
+  "fields": [
+    {
+      "field": "params.home_intro",
+      "label": "Home page intro",
+      "type": "string",
+      "placeholder": "Text after “Hey, I'm <name>.” Leave blank to use your Micro.blog bio."
+    },
+    {
+      "field": "params.date_format",
+      "label": "Post date format",
+      "type": "string",
+      "placeholder": "A Go date layout. Defaults to January 2, 2006."
+    },
+    {
+      "field": "params.card_date_format",
+      "label": "Home and archive date format",
+      "type": "string",
+      "placeholder": "A Go date layout. Defaults to January 2, 2006."
+    },
+    {
+      "field": "params.hide_reading_time",
+      "label": "Hide reading time on articles",
+      "type": "boolean"
+    },
+    {
+      "field": "params.photos_category",
+      "label": "Photos category",
+      "type": "string",
+      "placeholder": "Titleless posts in this category are photo posts. Defaults to Photos."
+    },
+    {
+      "field": "params.hide_share_cards",
+      "label": "Don't generate share images for articles without a picture",
+      "type": "boolean"
+    },
+    {
+      "field": "params.hide_conversation",
+      "label": "Hide Micro.blog replies under posts",
+      "type": "boolean"
+    },
+    {
+      "field": "params.email",
+      "label": "Reply by email address",
+      "type": "string",
+      "placeholder": "Shows an Email pill under posts. Leave blank to hide it."
+    },
+    {
+      "field": "params.mastodon",
+      "label": "Mastodon",
+      "type": "string",
+      "placeholder": "@username@mastodon.instance (also used for fediverse:creator)"
+    },
+    {
+      "field": "params.bluesky",
+      "label": "Bluesky",
+      "type": "string",
+      "placeholder": "Profile URL, e.g. https://bsky.app/profile/you.example.org"
+    },
+    {
+      "field": "params.pixelfed",
+      "label": "Pixelfed",
+      "type": "string",
+      "placeholder": "Profile URL"
+    },
+    {
+      "field": "params.newsletter_action",
+      "label": "Newsletter form URL",
+      "type": "string",
+      "placeholder": "The action URL from your provider's HTML embed. Leave blank for no signup form."
+    },
+    {
+      "field": "params.newsletter_email_field",
+      "label": "Newsletter email field name",
+      "type": "string",
+      "placeholder": "Defaults to email."
+    },
+    {
+      "field": "params.newsletter_label",
+      "label": "Newsletter signup text",
+      "type": "string",
+      "placeholder": "Markdown. Leave blank for Clodd's wording."
+    },
+    {
+      "field": "params.footer_text",
+      "label": "Footer text",
+      "type": "string",
+      "placeholder": "Markdown. Leave blank for © <year> <site title>."
+    },
+    {
+      "field": "params.google_site_verification",
+      "label": "Google site verification",
+      "type": "string",
+      "placeholder": "Content of the google-site-verification meta tag."
+    }
+  ]
+}
