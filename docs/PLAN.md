@@ -42,7 +42,14 @@ How the Clodd Hugo theme ([hugo-theme-clodd]) becomes a Micro.blog theme. This r
     - A post's `bluesky.url` gets no syndication pill (phase 4).
     - `/archive/` and `/photos/` are theme-blank's bare lists in Clodd's frame (phase 5).
     - `/feed.json` is theme-blank's. `/feed.xml` is Clodd's, but `feeds.rss_copies` writes it a second time and adds a stray `/feed.rss` (phase 6).
-- [ ] **2. Head and layout.** `microblog_head.html` in, Clodd's discovery and feed links out, `plugins_js`, `theme_seconds` cache-busting. Hugo Pipes (`resources.Get`, `css`, fingerprinting, `images.Text`) builds locally; confirm on a test blog, and fall back to `static/` if Micro.blog's build refuses it.
+- [x] **2. Head and layout.**
+  - `head.html` calls `microblog_head.html` after the theme's styles, so `custom.css` and plug-in CSS come later in the cascade and win. It brings the feed links (a category's own as well), `rel="me"` for Micro.blog and GitHub, the favicon, RSD, IndieAuth, Micropub, Webmention, Microsub and `plugins_html`.
+  - Out: Clodd's `head/favicon.html`, `head/feeds.html` and `head/indieweb.html`, `static/favicon.svg`, and the `custom_css`, `favicon`, `rel_me`, `bridgy_fed`, `indieauth` and `micropub` defaults. Pingback goes with webmention.io.
+  - `baseof.html` ends with Micro.blog's `custom_footer.html` and a deferred script per `plugins_js`.
+  - `theme_seconds` isn't needed: the theme's CSS and JS are already fingerprinted, and its only other static files are the fonts.
+  - Category feed links are titled with the site name alone, as `microblog_head.html` writes them. Clodd added the term.
+  - Tested with a stand-in plug-in in the test site: its partial, stylesheet and script appear on every page.
+  - Still open: whether Hugo Pipes (`resources.Get`, `minify`, `fingerprint`, `images.Text`) runs in Micro.blog's build. It does locally on 0.158. Check on a test blog, and fall back to `static/` if not.
 - [ ] **3. Params.** Map every template to the table above. Plainify Micro.blog's HTML `description`.
 - [ ] **4. Content.** Posts come from `where site.RegularPages "Type" "post"`. Year sections mean Newer/Older must walk the whole post list, not `InSection`. Syndication pills from `bluesky.url`. The avatar can't be inlined unless `resources.GetRemote` works there. The `replies` section, the `redirect` layout and `newsletter.html` (Micro.blog's newsletter template) are new.
 - [ ] **5. Archive, photos, search.** Archive and photos as Micro.blog's `archivehtml` and `photoshtml` layouts, at `/archive/` and `/photos/`. Search over `archive/index.json`. Random reads the same JSON.

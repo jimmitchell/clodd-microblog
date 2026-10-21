@@ -1,0 +1,6 @@
+{
+  "version": "1.0.0",
+  "title": "Plugin check",
+  "description": "A stand-in plug-in for the test site: one partial, one stylesheet and one script, each of which leaves a marker in the page.",
+  "includes": ["plugin-check.html"]
+}

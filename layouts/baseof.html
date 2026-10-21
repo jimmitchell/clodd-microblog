@@ -16,6 +16,10 @@
 {{ partial "search-overlay.html" . }}
 
 {{ partial "scripts.html" . }}
+{{ partial "custom_footer.html" . }}
+{{- range site.Params.plugins_js }}
+<script src="{{ . }}" defer></script>
+{{- end }}
 {{ partial "hooks/body-end.html" . }}
 </body>
 </html>

@@ -147,9 +147,15 @@
     "paginate_categories": false,
     "paginate_replies": false,
     "theme_seconds": "0",
-    "plugins_css": [],
-    "plugins_js": [],
-    "plugins_html": [],
+    "plugins_css": [
+      "/plugin-check.css"
+    ],
+    "plugins_js": [
+      "/plugin-check.js"
+    ],
+    "plugins_html": [
+      "plugin-check.html"
+    ],
     "feeds": {
       "bookmarks_json": ""
     },
@@ -172,7 +178,8 @@
   },
   "theme": [
     "clodd",
-    "theme-blank"
+    "theme-blank",
+    "plugin-check"
   ],
   "menu": {
     "main": [

@@ -8,7 +8,6 @@
 {{- with partial "canonical.html" . }}
 <link rel="canonical" href="{{ . }}">
 {{- end }}
-{{ partial "head/favicon.html" . }}
 <link rel="sitemap" type="application/xml" href="{{ "sitemap.xml" | absURL }}">
 {{ partial "head/opengraph.html" . }}
 {{- with site.Params.google_site_verification }}{{ if $.IsHome }}
@@ -19,12 +18,14 @@
        href must match the src that styles.html writes into the inlined
        @font-face, or the browser fetches the face twice. */}}
 <link rel="preload" href="{{ "fonts/DMSans-Variable.woff2" | relURL }}" as="font" type="font/woff2" crossorigin>
-{{ partial "head/feeds.html" . }}
-{{ partial "head/indieweb.html" . }}
 {{- /* Anti-flash: apply the saved or system theme before CSS renders.
        data-theme-pref carries the three-way preference so CSS can pick the
        toggle's icon on first paint, before deferred theme.js runs. */}}
 <script>(function(){var d=document.documentElement;var t=localStorage.getItem('theme');if(t!=='dark'&&t!=='light'){t='system';}d.setAttribute('data-theme-pref',t);var dark=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);d.setAttribute('data-theme',dark?'dark':'light');})();</script>
 {{ partial "head/styles.html" . }}
+{{- /* Micro.blog's own head: feed links, rel="me", the favicon, IndieAuth,
+       Micropub and Webmention discovery, then custom.css and plug-in CSS and
+       HTML. After the theme's styles, so the site's custom CSS wins. */}}
+{{ partial "microblog_head.html" . }}
 {{ partial "head/jsonld.html" . }}
 {{ partial "hooks/head-end.html" . }}

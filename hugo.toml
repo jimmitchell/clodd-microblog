@@ -49,14 +49,9 @@
   # Footer text, Markdown allowed. Empty shows "© <year> <site title>".
   footer_text = ""
 
-  custom_css = ""
-
   # A generated card as the share image of an article with no picture of
   # its own. See "Share images" in README.md.
   share_cards = true
-
-  # Path or URL. Empty uses the theme's favicon.svg.
-  favicon = ""
 
   # Emitted on the home page only.
   google_site_verification = ""
@@ -75,23 +70,6 @@
     bluesky = ""    # profile URL; also gets rel="atproto"
     pixelfed = ""   # profile URL
     github = ""     # profile URL
-
-  # Extra rel="me" links that get a <link> in <head> but no footer icon.
-  rel_me = []
-
-  # Adds the rel="me" link Bridgy Fed uses to verify a bridged site.
-  bridgy_fed = false
-
-  # IndieAuth discovery. Setting indiekey to an indiekey.id site ID fills in
-  # all three endpoints; otherwise set them one by one.
-  [params.indieauth]
-    indiekey = ""
-    metadata = ""
-    authorization_endpoint = ""
-    token_endpoint = ""
-
-  # Micropub endpoint URL, advertised with <link rel="micropub">.
-  micropub = ""
 
   # webmention.io. domain is the one registered there; link_tags are query
   # suffixes other sites add to links here (e.g. "ref=example.com"), asked

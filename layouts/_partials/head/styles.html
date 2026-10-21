@@ -21,6 +21,3 @@
 <style>{{ $critical.Content | safeCSS }}</style>
 <link rel="preload" href="{{ $deferred.RelPermalink }}" as="style" onload="this.onload=null;this.rel='stylesheet'">
 <noscript><link rel="stylesheet" href="{{ $deferred.RelPermalink }}"></noscript>
-{{- with site.Params.custom_css }}
-<style>{{ . | safeCSS }}</style>
-{{- end }}
