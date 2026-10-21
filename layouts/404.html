@@ -5,7 +5,7 @@
     <p class="error-page__hint">The page you're looking for doesn't exist or may have moved.</p>
     <div class="error-page__actions">
         <a href="{{ site.Home.RelPermalink }}" class="btn">← Go home</a>
-        {{- with site.GetPage "/search" }}
+        {{- with partialCached "search-target.html" site }}
         <a href="{{ .RelPermalink }}" class="btn">Search →</a>
         {{- end }}
         <a id="wayback-link" class="btn" href="#" target="_blank" rel="noopener noreferrer" style="display:none">Wayback Machine ↗</a>

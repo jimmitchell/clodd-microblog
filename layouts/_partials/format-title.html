@@ -1,0 +1,4 @@
+{{- /* The title of Micro.blog's archive or photos page while it renders,
+       or "" for any other page. See output-format.html. */ -}}
+{{- $titles := dict "archivehtml" "Archive" "photoshtml" "Photos" -}}
+{{- return index $titles (partial "output-format.html" .) | default "" -}}

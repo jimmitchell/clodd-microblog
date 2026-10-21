@@ -1,0 +1,7 @@
+{{- /* The site's search page, or nothing. On Micro.blog it's an ordinary
+       page at /search/ whose body is {{< search >}}, and Micro.blog chooses
+       its file name, so it is found by its URL rather than its path. Call
+       with partialCached. */ -}}
+{{- $page := false -}}
+{{- with where site.Pages "RelPermalink" "/search/" }}{{ $page = index . 0 }}{{ end -}}
+{{- return $page -}}

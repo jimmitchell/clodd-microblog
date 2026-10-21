@@ -1,11 +1,16 @@
 {{- /* The <title>, as Clodd writes it. A note has no title of its own, so the
        site title stands in. Paginated lists carry their page number. */ -}}
 {{- $suffix := "" -}}
-{{- if or .IsHome (eq .Kind "term") -}}
+{{- $formatTitle := partial "format-title.html" . -}}
+{{- /* Not on the archive or photos page: asking for the paginator there
+       would write a /page/1/ for it. */ -}}
+{{- if and (or .IsHome (eq .Kind "term")) (not $formatTitle) -}}
   {{- $pager := partial "pager.html" . -}}
   {{- if gt $pager.PageNumber 1 }}{{ $suffix = printf " — Page %d" $pager.PageNumber }}{{ end -}}
 {{- end -}}
-{{- if .IsHome -}}
+{{- if $formatTitle -}}
+  {{- $formatTitle }} — {{ site.Title -}}
+{{- else if .IsHome -}}
   {{- site.Title }}{{ $suffix -}}
 {{- else if eq .Kind "term" -}}
   {{- .Data.Singular | humanize }}: {{ .Title }}{{ $suffix }} — {{ site.Title -}}

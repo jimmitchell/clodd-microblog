@@ -1,8 +1,8 @@
 {{- /* Open Graph and Twitter card tags. og:url is the canonical URL;
-       og:type is article for posts (pages in mainSections) and website for
-       everything else, pages included. */ -}}
+       og:type is article for posts and replies (see is-entry.html) and
+       website for everything else, pages included. */ -}}
 {{- $title := .Title | default site.Title -}}
-{{- if .IsHome }}{{ $title = site.Title }}{{ end -}}
+{{- if .IsHome }}{{ $title = partial "format-title.html" . | default site.Title }}{{ end -}}
 {{- $title = $title | plainify | htmlUnescape -}}
 {{- $description := partial "description.html" . -}}
 {{- $image := partial "share-image.html" . -}}

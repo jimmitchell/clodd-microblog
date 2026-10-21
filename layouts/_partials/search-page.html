@@ -1,11 +1,12 @@
-{{- /* Clodd's search page, with Pagefind's index behind it. Arguments (a
-       dict): page, heading (false when the page already has a title, as when
-       this comes from the search shortcode).
+{{- /* Clodd's search page, searching Micro.blog's archive JSON. Arguments
+       (a dict): page, heading (false when the page already has a title, as
+       when this comes from the search shortcode, which is how a Micro.blog
+       page at /search/ gets it).
 
        The form submits to this same page with ?q=, which is also where the
-       header's search overlay sends a query. search.js loads the Pagefind
-       bundle, which the site's build creates (pagefind --site public), and
-       draws the results as Clodd's post cards. */ -}}
+       header's search overlay sends a query. search.js fetches
+       /archive/index.json (home.archivejson.json) and draws the results as
+       Clodd's post cards. */ -}}
 <div class="search-page" data-pagefind-ignore="all">
     {{- if ne .heading false }}
     <h1 class="search-page__title">{{ .page.Title | default "Search" }}</h1>
@@ -25,7 +26,7 @@
     </form>
 
     <div id="search-results" class="post-list" aria-live="polite"
-         data-bundle="{{ "pagefind/" | relURL }}"></div>
+         data-index="{{ (site.Home.OutputFormats.Get "archivejson").RelPermalink }}"></div>
 </div>
 {{- $js := resources.Get "js/search.js" | minify | fingerprint }}
 <script src="{{ $js.RelPermalink }}" defer></script>

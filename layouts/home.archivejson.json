@@ -1,0 +1,30 @@
+{{- /* Micro.blog's /archive/index.json, which the search page reads: a JSON
+       Feed of every post with its whole text, as mnml and Micro Search write
+       it, rather than theme-blank's 100-character summaries. What a result
+       card needs beyond the feed's own fields goes in a _clodd object, JSON
+       Feed's form for extensions, so other readers of the file are
+       unaffected. */ -}}
+{{- $settings := partialCached "settings.html" site -}}
+{{- $items := slice -}}
+{{- range partialCached "posts.html" site -}}
+  {{- $item := dict
+    "id" .Permalink
+    "url" .Permalink
+    "title" (.Title | plainify | htmlUnescape)
+    "content_text" (.Plain | htmlUnescape | replaceRE `\s+` " " | strings.TrimSpace)
+    "date_published" (.Date.Format "2006-01-02T15:04:05-07:00")
+    "_clodd" (dict
+      "kind" (partial "post-kind.html" .)
+      "date" (.Date | time.Format $settings.card_date_format))
+  -}}
+  {{- with .Params.categories }}{{ $item = merge $item (dict "tags" .) }}{{ end -}}
+  {{- $items = $items | append $item -}}
+{{- end -}}
+{{- dict
+  "version" "https://jsonfeed.org/version/1.1"
+  "title" site.Title
+  "icon" $settings.author.avatar
+  "home_page_url" site.Home.Permalink
+  "feed_url" (site.Home.OutputFormats.Get "archivejson").Permalink
+  "items" $items
+  | jsonify (dict "indent" "  ") -}}

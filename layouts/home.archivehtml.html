@@ -1,15 +1,15 @@
 {{ define "main" }}
 {{- /* Every post, newest first, grouped by month, with the categories above
-       and a year filter. Rendered for the `archive` section, so a site
-       turns it on with content/archive/_index.md. */}}
+       and a year filter. Micro.blog's /archive/: the home page in its
+       ArchiveHTML output format, so .Title and .Content are the home
+       page's and go unused. */}}
 {{- $posts := partialCached "posts.html" site }}
 <div class="archive h-feed">
     <header class="taxonomy-archive__header">
-        <h1 class="taxonomy-archive__title p-name">{{ .Title | default "Archive" }}</h1>
+        <h1 class="taxonomy-archive__title p-name">{{ partial "format-title.html" . }}</h1>
         {{- with $posts }}
         <p class="taxonomy-archive__description">{{ len . | lang.FormatNumber 0 }} posts since {{ (index (last 1 .) 0).Date.Format "2006" }}.</p>
         {{- end }}
-        {{- with .Content }}<div class="taxonomy-archive__description">{{ . }}</div>{{ end }}
     </header>
 
     {{- with site.Taxonomies.categories }}

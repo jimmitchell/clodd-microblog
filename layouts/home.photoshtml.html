@@ -2,10 +2,11 @@
 {{- /* Every picture from the photo posts, as a wall of square thumbnails by
        month. A post counts when it is a photo post or is filed in
        params.photos_category. Pictures are read from front matter
-       `featured` and from the Markdown or <img> images in the body. The
-       thumbnails open in the site's lightbox, which links back to each
-       picture's post. Rendered for the `photos` section, so a site turns it
-       on with content/photos/_index.md. */}}
+       `photos` (Micro.blog's uploads) and `featured`, and from the Markdown
+       or <img> images in the body. The thumbnails open in the site's
+       lightbox, which links back to each picture's post. Micro.blog's
+       /photos/: the home page in its PhotosHTML output format, so .Title
+       and .Content are the home page's and go unused. */}}
 {{- $photosCat := lower (partialCached "settings.html" site).photos_category }}
 {{- $mdImg := `!\[[^\]]*\]\(\s*<?([^)\s>]+)` }}
 {{- $htmlImg := `<img[^>]+src=["']([^"']+)["']` }}
@@ -14,6 +15,7 @@
   {{- $cats := apply ($p.Params.categories | default slice) "lower" "." }}
   {{- if or (and $photosCat (in $cats $photosCat)) (eq (partial "post-kind.html" $p) "photo") }}
     {{- $imgs := slice }}
+    {{- range $p.Params.photos | default slice }}{{ $imgs = $imgs | append . }}{{ end }}
     {{- with $p.Params.featured }}{{ $imgs = $imgs | append . }}{{ end }}
     {{- range findRESubmatch $mdImg $p.RawContent }}{{ $imgs = $imgs | append (index . 1) }}{{ end }}
     {{- range findRESubmatch $htmlImg $p.RawContent }}{{ $imgs = $imgs | append (index . 1) }}{{ end }}
@@ -22,8 +24,7 @@
 {{- end }}
 <div class="archive photos">
     <header class="taxonomy-archive__header">
-        <h1 class="taxonomy-archive__title">{{ .Title | default "Photos" }}</h1>
-        {{- with .Content }}<div class="taxonomy-archive__description">{{ . }}</div>{{ end }}
+        <h1 class="taxonomy-archive__title">{{ partial "format-title.html" . }}</h1>
     </header>
 
     {{- $years := slice }}
@@ -55,16 +56,23 @@
     {{- end }}
     {{- range .imgs }}
             <li>
-                {{- /* A square crop for local uploads; the lightbox gets the original. */}}
+                {{- /* A square crop for a picture Hugo can read; the lightbox
+                       gets the original. Micro.blog's uploads are outside the
+                       build, so they are scaled to 600px by Micro.blog's own
+                       resizer (the one conversation.js uses for avatars), and
+                       CSS crops them. Not under hugo server, where the
+                       resizer couldn't reach a local address. */}}
                 {{- $thumb := . | relURL }}
                 {{- $u := urls.Parse . }}
+                {{- $res := false }}
                 {{- if or (not $u.Host) (eq $u.Host (urls.Parse site.BaseURL).Host) }}
                   {{- $lookup := strings.TrimPrefix "/" $u.Path }}
-                  {{- with or ($post.Resources.Get $lookup) (resources.Get $lookup) }}
-                    {{- if in (slice "jpeg" "png" "webp" "gif") .MediaType.SubType }}
-                      {{- $thumb = (.Fill "600x600 Center webp q75").RelPermalink }}
-                    {{- end }}
-                  {{- end }}
+                  {{- $res = or ($post.Resources.Get $lookup) (resources.Get $lookup) }}
+                {{- end }}
+                {{- if and $res (in (slice "jpeg" "png" "webp" "gif") $res.MediaType.SubType) }}
+                  {{- $thumb = ($res.Fill "600x600 Center webp q75").RelPermalink }}
+                {{- else if and (not $res) $u.Host hugo.IsProduction }}
+                  {{- $thumb = printf "https://micro.blog/photos/600/%s" (urlquery .) }}
                 {{- end }}
                 <a class="photo-grid__link" href="{{ . | relURL }}" data-gallery-item data-post="{{ $post.RelPermalink }}">
                     <img src="{{ $thumb }}" alt="" loading="lazy" decoding="async" width="600" height="600">

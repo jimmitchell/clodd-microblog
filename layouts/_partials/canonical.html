@@ -1,7 +1,13 @@
 {{- /* This page's absolute URL. A paginated list is canonical at its own
-       page (/page/2/), not at page one. Empty for the 404 page. */ -}}
-{{- $url := .Permalink -}}
-{{- if or .IsHome (eq .Kind "term") -}}
+       page (/page/2/), not at page one. Empty for the 404 page.
+
+       The archive and photos pages are canonical at their own URLs. On them,
+       microblog_head.html also writes a rel="canonical" alternate pointing at
+       the home page, which is Micro.blog's and stays. */ -}}
+{{- $url := partial "permalink.html" . -}}
+{{- if partial "format-title.html" . -}}
+  {{- /* No paginator: see title.html. */ -}}
+{{- else if or .IsHome (eq .Kind "term") -}}
   {{- $url = (partial "pager.html" .).URL | absURL -}}
 {{- else if eq .Kind "404" -}}
   {{- $url = "" -}}

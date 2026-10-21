@@ -1,0 +1,19 @@
+{{- /* The output format being rendered, lower case: "html" for an ordinary
+       page, or "archivehtml" / "photoshtml" for Micro.blog's archive and
+       photos pages, which are the home page written out in other formats.
+       While those render, the page's .Permalink and .Title are still the home
+       page's, so the head partials ask this first.
+
+       Hugo has no direct way to ask. The formats are marked notAlternative,
+       so .AlternativeOutputFormats can't tell them apart; the page template
+       being executed (home.archivehtml.html) can, and it is always among the
+       calling partial's ancestors. */ -}}
+{{- $format := "html" -}}
+{{- with templates.Current -}}
+  {{- range .Ancestors -}}
+    {{- with findRESubmatch `^home\.(archivehtml|photoshtml)\.html$` (path.Base .Name) 1 -}}
+      {{- $format = index (index . 0) 1 -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $format -}}

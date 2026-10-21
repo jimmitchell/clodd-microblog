@@ -1,18 +1,3 @@
 {{ define "main" }}
-{{- /* Sends the visitor to a random post. The list is written into the page
-       at build time, so it needs no server. Use with `layout: random`. */}}
-{{- $urls := slice }}
-{{- range partialCached "posts.html" site }}
-  {{- $urls = $urls | append .RelPermalink }}
-{{- end }}
-<section class="page random-page">
-    <p>Taking you to a random post&hellip;
-    {{- with site.GetPage "/archive" }} If nothing happens, <a href="{{ .RelPermalink }}">browse the archive</a> instead.{{ end }}</p>
-</section>
-<script>
-(function () {
-    var posts = {{ $urls }};
-    if (posts.length) { location.replace(posts[Math.floor(Math.random() * posts.length)]); }
-}());
-</script>
+{{- partial "random-page.html" . }}
 {{ end }}

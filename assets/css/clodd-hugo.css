@@ -1,9 +1,9 @@
 /* ── Clodd for Hugo — pages Clodd itself does not have ──────────────────────
    The archive, the photos grid, the random-post page, the parts of search
-   Pagefind adds, and Micro.blog's conversation under posts. theme.css stays
-   a verbatim copy of Clodd's stylesheet, so
-   these live here, in its tokens and idiom, and are appended to the deferred
-   half: none of it styles the top of a post. */
+   Clodd's page lacks, and Micro.blog's conversation under posts. theme.css
+   stays a verbatim copy of Clodd's stylesheet, so these live here, in its
+   tokens and idiom, and are appended to the deferred half: none of it styles
+   the top of a post. */
 
 /* ── Year filter (archive and photos) ─────────────────────────────────────── */
 /* The same field as .search-page__form's input, so the theme still has one
@@ -160,8 +160,8 @@
 
 .gallery-lightbox__post:hover { opacity: 1; text-decoration: underline; color: #fff; }
 
-/* ── Search results (Pagefind) ────────────────────────────────────────────── */
-/* Pagefind marks each matched word. A wash of the link colour rather than the
+/* ── Search results ───────────────────────────────────────────────────────── */
+/* search.js marks each matched word. A wash of the link colour rather than the
    browser's yellow, so it reads in both themes. */
 #search-results mark {
     background: color-mix(in srgb, var(--color-link) 22%, transparent);

@@ -1,0 +1,7 @@
+{{- /* This page's absolute URL in the output format being rendered: the
+       archive and photos pages are the home page in other formats, and its
+       .Permalink is "/" while they render. */ -}}
+{{- $url := .Permalink -}}
+{{- $format := partial "output-format.html" . -}}
+{{- if ne $format "html" }}{{ with .OutputFormats.Get $format }}{{ $url = .Permalink }}{{ end }}{{ end -}}
+{{- return $url -}}
